@@ -1,0 +1,16 @@
+# SAGE Backend Dependencies
+# =========================
+
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Data validation & settings
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+
+# Database
+sqlalchemy>=2.0.0
+
+# Utilities
+python-dotenv>=1.0.0
