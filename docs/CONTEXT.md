@@ -15,10 +15,10 @@
 
 | Team Member | SRN / ID | Independent Module | What They Build |
 | :--- | :--- | :--- | :--- |
-| **Kurumeti Mitesh** | `PES2UG24AM080` | **Chat Application + Orchestration** | Chat UI, backend API, conversation storage, and a working end-to-end tutoring loop using mock AI components (with plug-and-play interfaces for the rest of the team). |
+| **Kurumeti Mitesh** | `PES2UG24AM080` | **Chat Application + Orchestration** | Chat UI, backend API, conversation storage, learner-state updates and scaffolding-stage selection, and a working end-to-end tutoring loop using mock AI components (with plug-and-play interfaces for the rest of the team). |
 | **Paturu Naga Jignas** | `PES2UG24AM110` | **RAG & Knowledge Retrieval** | Standalone document-ingestion and retrieval system that answers queries with relevant course excerpts from the *Prompt Engineering and Generative AI* slides/notes. |
-| **Nidhi M** | `PES2UG24AM103` | **Student Understanding Analyzer** | Standalone system that classifies student answers, detects misconceptions, and tracks student progress/state across turns. |
-| **Mohammed Tahir Siddique** | `PES2UG24AM092` | **Socratic Tutor Agent** | Standalone agent that generates guiding questions, adaptive hints, and explanations based on student state and retrieved course evidence. |
+| **Nidhi M** | `PES2UG24AM103` | **Student Understanding Analyzer** | Standalone system that classifies student answers, detects misconceptions, and emits per-turn misconception verdicts and LCC scores that the orchestrator uses to track learner state. Drafts the shared unit taxonomy (`data/units/`). |
+| **Mohammed Tahir Siddique** | `PES2UG24AM092` | **Socratic Tutor Agent** | Standalone agent that generates guiding questions, adaptive hints, and explanations for the scaffolding stage chosen by the orchestrator, grounded in retrieved course evidence. |
 
 ---
 
@@ -68,12 +68,14 @@ This dialogue illustrates how SAGE operates in practice on a *Prompt Engineering
 
 ## 4. End-to-End Runtime Loop (How SAGE Works Per Turn)
 
+**Session start:** The student picks a unit; SAGE makes that unit's first topic active and opens with its starter question. The student may also raise a free-form doubt at any point, which the analyzer maps to a topic in the unit.
+
 The system executes a 6-step orchestration loop for every message the student sends:
 1. **Student Input:** The student sends a message (an answer, a question, a debugging request, or a prompt attempt).
 2. **Understanding & Misconception Analysis (Nidhi's Module):** The system evaluates whether the response is correct, partly correct, or wrong—and if wrong, classifies what kind of mistake or misconception it exhibits, plus the student's help-seeking intent.
-3. **Session State & Struggle Lookup (Mitesh's Storage + Nidhi's Tracker):** The system checks what this student has already struggled with on this topic during the current session (e.g., turn count on the active misconception, prior hints given, confidence/mastery scores) to determine how much support to give.
+3. **Session State Update & Stage Selection (Mitesh's Orchestrator):** The orchestrator applies the confidence update rules (§7.3) to the analyzer's verdicts, accumulates the LCC score, updates the struggle count, and selects the scaffolding stage using the rules in §7.4.
 4. **Course Material Retrieval (Jignas's RAG Module):** The system queries the vector/document store of the *Prompt Engineering and Generative AI* course slides and notes (scoped to 2–3 units) so the next response stays strictly grounded in what was taught in class.
-5. **Pedagogical Move & Response Generation (Tahir's Socratic Agent):** Based on the student's state, struggle history, and retrieved course excerpt, the agent selects the appropriate scaffolding level ($\text{Question} \rightarrow \text{Hint} \rightarrow \text{Explanation}$) and generates the response.
+5. **Response Generation (Tahir's Socratic Agent):** Given the stage chosen in step 3, the student's state, and the retrieved course excerpts, the agent generates the response for that stage. It does not pick or override the stage.
 6. **Delivery & State Persistence (Mitesh's Orchestrator & UI):** The response (with course grounding metadata) is persisted to the conversation database and displayed to the student in the Chat UI, starting the loop again.
 
 ---
@@ -193,16 +195,19 @@ After each learner turn, the analyzer evaluates the student's utterance and emit
   $$C_{t}(m) < 0.18$$
 
 ### 7.4 How SAGE Adapts Thonge & Thakkar's Constraints
-While Thonge & Thakkar's *Socratic AI* enforced a strict "Question-Only" constraint (which they noted caused frustration under time pressure), **SAGE** explicitly addresses this limitation via its **$\text{Question} \rightarrow \text{Hint} \rightarrow \text{Explanation}$** escalation policy:
-* **Stage 1 (`QUESTION`):** Default mode when a misconception is newly `introduced` ($C \approx 0.43$) or turn struggle count is $1$–$2$. Prohibits direct fixes; asks a single focused diagnostic or contrasting question.
-* **Stage 2 (`HINT`):** Triggered when the student stalls (e.g., misconception is `reinforced` pushing $C \ge 0.65$, or struggle count on the same concept reaches $2$–$3$ turns). Provides a targeted conceptual cue grounded in retrieved course material plus a guiding question.
-* **Stage 3 (`EXPLANATION`):** Triggered as a last resort when struggle count $\ge 4$ or the student remains blocked after hints. Delivers a clear, course-grounded explanation of the concept, cites the course slide/unit, and asks the student to apply it to their original problem.
+While Thonge & Thakkar's *Socratic AI* enforced a strict "Question-Only" constraint (which they noted caused frustration under time pressure), **SAGE** explicitly addresses this limitation via its **$\text{Question} \rightarrow \text{Hint} \rightarrow \text{Explanation}$** escalation policy. The orchestrator selects the stage each turn; the first matching rule wins (canonical copy: `docs/ARCHITECTURE.md`):
+* **`WRAP_UP`:** $\text{Overall\_Score} > 0.8$ (`topic_status = DONE`). Positive wrap-up feedback; the orchestrator then advances to the unit's next topic and posts its starter question.
+* **Stage 3 (`EXPLANATION`):** struggle count $\ge 4$. Delivers a clear, course-grounded explanation of the concept, cites the course slide/unit, and asks the student to apply it to their original problem.
+* **Stage 2 (`HINT`):** struggle count $\ge 2$, **or** any active misconception has $C \ge 0.65$ (i.e., it was `reinforced` at least once). Provides a targeted conceptual cue grounded in retrieved course material plus a guiding question.
+* **Stage 1 (`QUESTION`):** otherwise (default). Prohibits direct fixes; asks a single focused diagnostic or contrasting question.
+
+**Struggle count (`struggle_turn_count`):** incremented when the analyzer classifies the turn as `wrong`, `partly_correct`, or `needs_scaffolding`; reset to $0$ on a `correct` turn or a topic change. A topic change also resets the LCC score, while misconception confidences carry over and decay. A `give_me_answer` intent never skips a stage.
 
 ---
 
 ## 8. Course Domain Scope: *Prompt Engineering and Generative AI* (2–3 Units)
 
-To keep the mini-project realistic, focused, and testable, SAGE's knowledge base and misconception taxonomy are scoped to **2–3 units** of the *Prompt Engineering and Generative AI* elective, such as:
+To keep the mini-project realistic, focused, and testable, SAGE's knowledge base and misconception taxonomy are scoped to **2–3 units** of the *Prompt Engineering and Generative AI* elective. Each unit's topics, starter questions, weighted expectations, and misconceptions live in a shared file `data/units/<unit_id>.json` (drafted by Nidhi, read by the analyzer and orchestrator). Working unit list:
 1. **Unit 1: Prompt Structure, Role, Constraints & Output Formatting**
    * *Key Expectations:* Specifying persona/role, explicit output format (JSON/Markdown/table), task context, and boundary constraints reduces output variance.
    * *Common Misconceptions:* Believing vague one-line questions guarantee deterministic formatting; confusing system instructions with user data; assuming longer prompts always improve accuracy without structure.

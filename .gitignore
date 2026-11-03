@@ -1,2 +1,7 @@
 #dev's yard to dumb their work files independent for each dev and never commited 
 .devyard/
+
+# local secrets (LLM API keys etc.)
+.env
+.env.*
+!.env.example

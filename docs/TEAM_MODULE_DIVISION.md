@@ -26,7 +26,7 @@
      * Right Inspector Drawer: Live telemetry showing the active scaffolding stage, misconception confidence progress bars, LCC score progress, and turn trace payloads.
   2. **Backend API (`backend/`):** FastAPI application with endpoints for session lifecycle (`/api/sessions`) and messaging (`/api/sessions/{id}/messages`).
   3. **Storage (`sage.db`):** SQLite database managed via SQLAlchemy 2.0 with four models: `Session`, `Message`, `LearnerState`, and `TurnTrace`.
-  4. **Orchestrator (`backend/services/orchestrator.py`):** Executes the 6-step loop per turn. Applies the mathematical state update rules for misconceptions ($0.32$ baseline, $0.43$ introduced, $+0.22$ reinforced, $-0.18$ weakened, $\times 0.90$ decay, $< 0.18$ resolved) and determines the scaffolding stage escalation.
+  4. **Orchestrator (`backend/services/orchestrator.py`):** Executes the 6-step loop per turn. Owns all learner-state math: applies the misconception update rules ($0.43$ when introduced, $+0.22$ reinforced, $-0.18$ weakened, $\times 0.90$ decay, $< 0.18$ resolved), accumulates the LCC score, maintains `struggle_turn_count`, and selects the scaffolding stage using the stage rules in `docs/ARCHITECTURE.md` (the tutor never overrides it). On session start and after `WRAP_UP`, posts the active topic's starter question from `data/units/`.
   5. **Mock AI Components:** Fallback mock implementations for the Analyzer, Retriever, and Tutor, switchable via environment variables (`USE_MOCK_AI=true`).
 * **Agent Rule:** When coding for Mitesh, do not write internal ingestion logic or LLM prompting for RAG/Analyzer/Tutor; define the interfaces and mock connectors that Mitesh will use to plug in teammates' work.
 
@@ -53,13 +53,14 @@
      * `weakened`: Student demonstrates conceptual correction or counter-evidence.
      * `absent`: Misconception was not exhibited in the turn.
   3. **LCC Evaluation:** Quantify turn contribution using Hu et al. (2025) metrics: Relevant-New ($RN$), Relevant-Old ($RO$), Irrelevant-New ($IN$), and Irrelevant-Old ($IO$).
-* **Agent Rule:** When coding for Nidhi, work solely inside `modules/analyzer/`. Ensure output matches the `AnalyzerOutput` JSON schema exactly.
+  4. **Unit Taxonomy (shared):** Draft `data/units/<unit_id>.json` for each unit — topics, starter questions, weighted expectations, and misconceptions with stable IDs. The orchestrator also reads these files, so changes need team agreement.
+* **Agent Rule:** When coding for Nidhi, work solely inside `modules/analyzer/` and the shared `data/units/` taxonomy. Ensure output matches the `AnalyzerOutput` JSON schema exactly.
 
 ---
 
 ### 2.4 Mohammed Tahir Siddique (`PES2UG24AM092`) — Socratic Tutor Agent
 * **Assigned Scope:**
-  1. **Socratic Generation:** Generate pedagogically aligned responses following the escalation policy:
+  1. **Socratic Generation:** Generate the response for the stage given in `updated_learner_state.scaffolding_stage` (selected by the orchestrator — the tutor does not pick or override it). When `topic_status` is `DONE`, return a `WRAP_UP` move. Stages:
      * `QUESTION` (Stage 1): Open-ended diagnostic or contrasting question. Direct solution/answer must NOT be provided.
      * `HINT` (Stage 2): Specific conceptual cue grounded in retrieved course material, guiding the student to identify their error.
      * `EXPLANATION` (Stage 3): Clear, course-grounded explanation of the concept, citing the unit/slide, followed by an application check.
@@ -119,6 +120,8 @@ All four modules integrate through these immutable contracts. Any AI coding agen
   }
 }
 ```
+
+*Notes:* `detected_topic` is a `topic_id` from `data/units/<unit_id>.json`; `misconception_id` values come from the same file. `active_misconceptions` (here and in Contract 3) is a map of `{ "misconception_id": confidence }`.
 
 ---
 
@@ -193,7 +196,7 @@ All four modules integrate through these immutable contracts. Any AI coding agen
 
 1. **Isolation First:** Each module developer can test their module independently using stubbed inputs matching the contracts above.
 2. **Never Break Contracts:** Do not modify field names or value types in `AnalyzerInput/Output`, `RetrieverInput/Output`, or `TutorAgentInput/Output` without team consensus.
-3. **Pluggable Integration:** Mitesh's orchestrator maintains mock adapters. Teammates can connect either by:
-   * Direct Python module import (if sharing the repository / virtual environment).
-   * Standalone microservices via HTTP endpoints (`POST /analyze`, `POST /retrieve`, `POST /tutor`).
+3. **Pluggable Integration:** Mitesh's orchestrator maintains mock adapters. Teammates connect by:
+   * **Default — direct Python import** (shared repository / virtual environment). Each module exposes one function taking and returning a dict that matches its contract: `modules.analyzer.analyze()`, `modules.rag.retrieve()`, `modules.tutor.respond()`.
+   * Optional — standalone microservices via HTTP endpoints (`POST /analyze`, `POST /retrieve`, `POST /tutor`).
 4. **Pedagogical Integrity:** Always preserve the core rule: **Never give the direct answer first on diagnostic turns.** Let the student do the thinking.
