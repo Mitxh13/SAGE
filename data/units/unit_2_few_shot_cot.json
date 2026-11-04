@@ -1,0 +1,64 @@
+{
+  "unit_id": "unit_2_few_shot_cot",
+  "title": "Unit 2: In-Context Learning — Zero-Shot, Few-Shot & Chain-of-Thought",
+  "topics": [
+    {
+      "topic_id": "topic_in_context_exemplars",
+      "title": "Few-Shot Exemplar Selection and Formatting",
+      "starter_question": "If zero-shot prompting fails on an edge-case task, how should you structure few-shot examples to guide the model effectively?",
+      "expectations": [
+        {
+          "id": "exp_representative_examples",
+          "text": "Provide diverse and balanced input-output demonstration pairs covering edge cases and expected failure modes.",
+          "weight": 0.5
+        },
+        {
+          "id": "exp_consistent_formatting",
+          "text": "Keep demonstration syntax, label conventions, and delimiters strictly uniform across all exemplars.",
+          "weight": 0.5
+        }
+      ],
+      "misconceptions": [
+        {
+          "id": "misc_majority_label_bias",
+          "label": "Skewing few-shot exemplar distributions toward one class",
+          "description": "Including disproportionately more positive or negative examples, biasing the model to predict the dominant label."
+        },
+        {
+          "id": "misc_recency_bias",
+          "label": "Assuming earlier exemplars carry the same weight as the final exemplar",
+          "description": "Ignoring the tendency of LLMs to disproportionately attend to the nearest preceding demonstration before completion."
+        }
+      ]
+    },
+    {
+      "topic_id": "topic_chain_of_thought",
+      "title": "Chain-of-Thought (CoT) Prompting",
+      "starter_question": "Why does adding 'Think step by step' improve accuracy on multi-step reasoning problems, and where should the reasoning appear relative to the final answer?",
+      "expectations": [
+        {
+          "id": "exp_intermediate_token_allocation",
+          "text": "Chain-of-Thought prompting forces the generation of intermediate reasoning tokens before predicting the final answer.",
+          "weight": 0.6
+        },
+        {
+          "id": "exp_reasoning_before_answer",
+          "text": "Placing the rationale trace before the final answer allows subsequent output tokens to be conditioned on explicit logic.",
+          "weight": 0.4
+        }
+      ],
+      "misconceptions": [
+        {
+          "id": "misc_cot_for_factual_lookup",
+          "label": "Expecting Chain-of-Thought to resolve factual knowledge retrieval gaps",
+          "description": "Believing step-by-step reasoning compensates for missing facts rather than decomposing complex logic and calculations."
+        },
+        {
+          "id": "misc_answer_before_rationale",
+          "label": "Placing the final answer before the intermediate reasoning steps",
+          "description": "Assuming the model can reason backwards after already committing to the final answer token distribution."
+        }
+      ]
+    }
+  ]
+}
