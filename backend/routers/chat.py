@@ -1,21 +1,26 @@
 """
 Chat & turn execution router.
 
-Receives student messages, triggers the SAGE 6-step tutoring loop via the
-orchestrator, and returns the pedagogical move, updated learner state,
-and execution telemetry trace.
+Receives student messages, saves them into SQLite, executes the tutoring loop
+(staged with persistent state updates and traces for the Inspector view),
+and returns the pedagogical response.
 
-Reference: docs/ARCHITECTURE.md §Turn loop & stage rules
+Reference:
+- docs/ARCHITECTURE.md §Turn loop & stage rules
+- docs/TEAM_MODULE_DIVISION.md §2 & §3
 """
 
 from __future__ import annotations
 
+import time
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
-from backend.routers.sessions import _STUB_SESSIONS
+from backend.database.db import get_db
+from backend.database.repository import SageRepository
 from backend.schemas.api_schemas import (
     CitationItem,
     LearnerStateResponse,
@@ -37,91 +42,116 @@ router = APIRouter(prefix="/sessions", tags=["Chat"])
 async def send_message(
     session_id: str,
     request: SendMessageRequest,
+    db: Session = Depends(get_db),
 ) -> TurnResponse:
     """
     Process a student turn:
-    1. Append user message to history.
-    2. Execute tutoring loop (staged for Task 3 orchestrator).
-    3. Return assistant response with scaffolding move and inspector trace.
+    1. Validate session exists in SQLite.
+    2. Save student message utterance.
+    3. Execute pedagogical evaluation (Orchestrator loop).
+    4. Persist assistant reply with scaffolding move & citations.
+    5. Update persistent learner state (struggle count, stage, LCC).
+    6. Persist execution trace for the X-Ray Inspector.
     """
-    if session_id not in _STUB_SESSIONS:
+    start_time = time.perf_counter()
+    repo = SageRepository(db)
+
+    # 1. Validate session
+    session = repo.get_session(session_id)
+    if not session:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Session '{session_id}' not found",
         )
 
-    session = _STUB_SESSIONS[session_id]
+    current_state = repo.get_learner_state(session_id) or LearnerStateResponse()
 
-    # 1. Record student message
-    student_msg = MessageResponse(
-        id=f"msg_{uuid.uuid4().hex[:8]}",
+    # 2. Persist student turn message
+    student_msg = repo.save_message(
+        session_id=session_id,
         role="user",
         content=request.content,
-        created_at=datetime.utcnow(),
     )
-    session.messages.append(student_msg)
 
-    # 2. Generate response (Stub adhering to SAGE Question stage before Task 3)
-    assistant_msg = MessageResponse(
-        id=f"msg_{uuid.uuid4().hex[:8]}",
+    # 3. Determine turn response & scaffolding move
+    # (Pre-orchestrator stub adhering strictly to Stage 1 QUESTION rules)
+    tutor_reply = (
+        "That's a thoughtful start. Let's look closely at how the model parses instructions — "
+        "what happens if your prompt does not clearly separate dynamic user inputs from core system rules?"
+    )
+    scaffolding_move = ScaffoldingMove.QUESTION
+    citations = [
+        CitationItem(
+            chunk_id="u1_slide_14",
+            source_title="Unit 1: Anatomy of an Effective Prompt",
+            slide_or_section="Slide 14: Output Formatting & Structural Constraints",
+            excerpt="When prompts omit structural delimiters, the model cannot distinguish system instructions from user variables.",
+        )
+    ]
+
+    # 4. Persist assistant reply message
+    assistant_msg = repo.save_message(
+        session_id=session_id,
         role="assistant",
-        content=(
-            "That's an interesting approach. Let's look at how the model interprets it — "
-            "what happens if the user query contains ambiguous instructions without boundary delimiters?"
-        ),
-        scaffolding_move=ScaffoldingMove.QUESTION,
-        citations=[
-            CitationItem(
-                chunk_id="u1_slide_14",
-                source_title="Unit 1: Anatomy of an Effective Prompt",
-                slide_or_section="Slide 14: Output Formatting & Structural Constraints",
-                excerpt="When prompts omit structural delimiters, the model cannot separate instructions from input data.",
-            )
-        ],
-        created_at=datetime.utcnow(),
+        content=tutor_reply,
+        scaffolding_move=scaffolding_move,
+        citations=citations,
     )
-    session.messages.append(assistant_msg)
 
-    # 3. Updated state snapshot
-    session.learner_state.struggle_turn_count = 1
-    session.learner_state.scaffolding_stage = ScaffoldingMove.QUESTION
+    # 5. Update persistent learner state
+    updated_struggle = current_state.struggle_turn_count + 1
+    updated_misconceptions = dict(current_state.active_misconceptions)
+    if "misc_implicit_format_expectation" not in updated_misconceptions:
+        # Initial introduced confidence = 0.43 per Thonge & Thakkar (2026)
+        updated_misconceptions["misc_implicit_format_expectation"] = 0.43
 
-    # 4. Turn trace
-    turn_index = len(session.messages) // 2
-    trace = TurnTraceResponse(
-        id=f"trace_{uuid.uuid4().hex[:8]}",
+    updated_state_model = repo.create_or_update_learner_state(
+        session_id=session_id,
+        active_topic_id=current_state.active_topic_id or "topic_output_formatting",
+        struggle_turn_count=updated_struggle,
+        scaffolding_stage=ScaffoldingMove.QUESTION,
+        overall_lcc_score=-0.1,
+        accumulated_correct_score=0.1,
+        accumulated_wrong_score=0.2,
+        topic_status=TopicStatus.IN_PROGRESS,
+        active_misconceptions=updated_misconceptions,
+    )
+
+    latency_ms = int((time.perf_counter() - start_time) * 1000)
+
+    # 6. Persist execution trace for Inspector
+    turn_index = (student_msg.turn_index + 1) // 2
+    raw_trace = repo.save_turn_trace(
         session_id=session_id,
         turn_index=turn_index,
         analyzer_output={
             "help_request_type": "concept_question",
             "answer_classification": "needs_scaffolding",
-            "detected_topic": "output_formatting",
+            "detected_topic": current_state.active_topic_id,
             "retrieval_query": "prompt structure boundary delimiters constraints",
-            "misconception_verdicts": [],
+            "misconception_verdicts": [
+                {
+                    "misconception_id": "misc_implicit_format_expectation",
+                    "misconception_label": "Assuming the LLM infers desired output format",
+                    "verdict": "introduced",
+                    "evidence_quote": request.content,
+                }
+            ],
             "lcc_evaluation": {
                 "relevant_new": 0.1,
                 "relevant_old": 0.0,
-                "irrelevant_new": 0.0,
+                "irrelevant_new": 0.2,
                 "irrelevant_old": 0.0,
-                "turn_note": "Student initiated reflection on prompt constraints.",
+                "turn_note": "Student initiated discussion on prompt boundary constraints.",
             },
         },
         retriever_output={
-            "chunks": [
-                {
-                    "chunk_id": "u1_slide_14",
-                    "unit_id": session.unit_id,
-                    "source_title": "Unit 1: Anatomy of an Effective Prompt",
-                    "slide_or_section": "Slide 14",
-                    "excerpt": "When prompts omit structural delimiters, the model cannot separate instructions from input data.",
-                    "relevance_score": 0.92,
-                }
-            ]
+            "chunks": [c.model_dump() for c in citations]
         },
         tutor_output={
-            "scaffolding_move": "QUESTION",
-            "tutor_message": assistant_msg.content,
-            "pedagogical_reasoning": "First struggle turn — asking diagnostic question targeting boundary constraints.",
+            "scaffolding_move": scaffolding_move.value,
+            "tutor_message": tutor_reply,
+            "pedagogical_reasoning": "First struggle turn — guiding question targeting boundary constraints grounded in Slide 14.",
             "cited_chunk_ids": ["u1_slide_14"],
             "constraints_validated": {
                 "no_direct_answer_leaked": True,
@@ -129,13 +159,39 @@ async def send_message(
                 "course_grounded": True,
             },
         },
-        latency_ms=120,
-        created_at=datetime.utcnow(),
+        latency_ms=latency_ms,
     )
-    session.traces.append(trace)
 
     return TurnResponse(
-        message=assistant_msg,
-        learner_state=session.learner_state,
-        trace=trace,
+        message=MessageResponse(
+            id=assistant_msg.id,
+            role=assistant_msg.role,
+            content=assistant_msg.content,
+            scaffolding_move=ScaffoldingMove(assistant_msg.scaffolding_move),
+            citations=citations,
+            created_at=assistant_msg.created_at,
+        ),
+        learner_state=LearnerStateResponse(
+            active_topic_id=updated_state_model.active_topic_id,
+            struggle_turn_count=updated_state_model.struggle_turn_count,
+            scaffolding_stage=ScaffoldingMove(updated_state_model.scaffolding_stage),
+            overall_lcc_score=updated_state_model.overall_lcc_score,
+            accumulated_correct_score=updated_state_model.accumulated_correct_score,
+            accumulated_wrong_score=updated_state_model.accumulated_wrong_score,
+            topic_status=TopicStatus(updated_state_model.topic_status),
+            active_misconceptions=updated_state_model.active_misconceptions,
+        ),
+        trace=TurnTraceResponse(
+            id=raw_trace.id,
+            session_id=raw_trace.session_id,
+            turn_index=raw_trace.turn_index,
+            analyzer_output={
+                "help_request_type": "concept_question",
+                "answer_classification": "needs_scaffolding",
+            },
+            retriever_output={"chunks": [c.model_dump() for c in citations]},
+            tutor_output={"scaffolding_move": scaffolding_move.value},
+            latency_ms=raw_trace.latency_ms,
+            created_at=raw_trace.created_at,
+        ),
     )
