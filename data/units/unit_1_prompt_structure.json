@@ -1,0 +1,64 @@
+{
+  "unit_id": "unit_1_prompt_structure",
+  "title": "Unit 1: Prompt Structure, Role, Constraints & Output Formatting",
+  "topics": [
+    {
+      "topic_id": "topic_output_formatting",
+      "title": "Output Formatting and Structural Constraints",
+      "starter_question": "When you write a prompt, how do you specify the exact format and structure you want the model to respond in?",
+      "expectations": [
+        {
+          "id": "exp_explicit_format",
+          "text": "Explicitly specify target format schema (e.g., JSON schema, markdown table, bullet points) to constrain the output distribution.",
+          "weight": 0.4
+        },
+        {
+          "id": "exp_boundary_delimiters",
+          "text": "Use clear boundary delimiters (e.g., XML tags, triple backticks) to separate instructions from user input variables.",
+          "weight": 0.3
+        },
+        {
+          "id": "exp_role_persona",
+          "text": "Define a system persona or domain role to establish appropriate vocabulary, depth, and tone.",
+          "weight": 0.3
+        }
+      ],
+      "misconceptions": [
+        {
+          "id": "misc_implicit_format_expectation",
+          "label": "Assuming the LLM infers desired output format without explicit instructions",
+          "description": "Believing vague one-line prompts guarantee consistent, deterministic response structure across runs."
+        },
+        {
+          "id": "misc_prompt_length_illusion",
+          "label": "Assuming longer prompts automatically produce better outputs without structural constraints",
+          "description": "Adding conversational adjectives and verbosity instead of well-defined schema rules and negative constraints."
+        }
+      ]
+    },
+    {
+      "topic_id": "topic_system_instructions_vs_user_data",
+      "title": "System Instructions vs. User Data Separation",
+      "starter_question": "How do you ensure that dynamic user input does not override or hijack the core system rules in your prompt?",
+      "expectations": [
+        {
+          "id": "exp_instruction_data_separation",
+          "text": "Clearly isolate untrusted user data within dedicated delimiter tags distinct from system instructions.",
+          "weight": 0.5
+        },
+        {
+          "id": "exp_defensive_constraints",
+          "text": "State defensive boundary instructions that dictate fallback behavior if user inputs conflict with system policy.",
+          "weight": 0.5
+        }
+      ],
+      "misconceptions": [
+        {
+          "id": "misc_confusing_instructions_with_data",
+          "label": "Treating user input as authoritative system instructions",
+          "description": "Assuming the model natively distinguishes between system developer intent and arbitrary user strings without structural separation."
+        }
+      ]
+    }
+  ]
+}

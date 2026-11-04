@@ -1,0 +1,59 @@
+{
+  "unit_id": "unit_3_decoding_rag",
+  "title": "Unit 3: LLM Decoding Parameters, Hallucinations & RAG Concepts",
+  "topics": [
+    {
+      "topic_id": "topic_decoding_parameters",
+      "title": "Sampling & Decoding Parameters (Temperature, Top-p)",
+      "starter_question": "If an LLM hallucinates factual statements even when temperature is set to 0.0, why does zero temperature not prevent hallucination?",
+      "expectations": [
+        {
+          "id": "exp_temperature_controls_randomness_not_facts",
+          "text": "Temperature controls the flatness of the softmax token distribution, not the factual truth of pretraining knowledge.",
+          "weight": 0.5
+        },
+        {
+          "id": "exp_top_p_nucleus_sampling",
+          "text": "Top-p dynamic nucleus sampling dynamically truncates the probability mass tail, maintaining coherent vocabulary selections.",
+          "weight": 0.5
+        }
+      ],
+      "misconceptions": [
+        {
+          "id": "misc_zero_temp_factual_guarantee",
+          "label": "Believing temperature = 0 eliminates hallucinations",
+          "description": "Assuming greedy sampling guarantees factual correctness even when domain facts were never learned in training weights."
+        },
+        {
+          "id": "misc_confusing_sampling_with_retrieval",
+          "label": "Confusing Top-k/Top-p token sampling with RAG top-k chunk retrieval",
+          "description": "Conflating decoding hyperparameters with external document vector retrieval counts."
+        }
+      ]
+    },
+    {
+      "topic_id": "topic_rag_grounding",
+      "title": "Retrieval-Augmented Generation Grounding",
+      "starter_question": "When should you use Retrieval-Augmented Generation (RAG) instead of prompt engineering or fine-tuning?",
+      "expectations": [
+        {
+          "id": "exp_dynamic_external_evidence",
+          "text": "RAG injects dynamic, proprietary, or post-cutoff course excerpts directly into the prompt context window.",
+          "weight": 0.6
+        },
+        {
+          "id": "exp_extrinsic_hallucination_mitigation",
+          "text": "Grounding generation in retrieved chunks prevents extrinsic hallucinations and allows verifiable source citations.",
+          "weight": 0.4
+        }
+      ],
+      "misconceptions": [
+        {
+          "id": "misc_llm_live_knowledge_assumption",
+          "label": "Assuming LLMs query live databases natively",
+          "description": "Believing foundation models possess real-time external knowledge without explicit retrieval augmentations or tools."
+        }
+      ]
+    }
+  ]
+}
