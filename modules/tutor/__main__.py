@@ -7,6 +7,7 @@ Usage (from the repo root)::
 
     python -m modules.tutor modules/tutor/fixtures/u1_hint_reinforced.json
     python -m modules.tutor --all
+    python -m modules.tutor --check-llm     # one live call using the LLM_* settings in .env
 """
 
 from __future__ import annotations
@@ -20,8 +21,24 @@ from pydantic import ValidationError
 
 from backend.schemas.contracts import TutorAgentInput
 from modules.tutor import SocraticTutor
+from modules.tutor.llm import LLMError, build_llm_client
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
+
+
+async def _check_llm() -> int:
+    """Make one small JSON call to confirm the LLM settings work."""
+    try:
+        client = build_llm_client()
+        reply = await client.generate_json(
+            system="You are a connectivity check. Reply with JSON only.",
+            user='Return exactly this JSON object: {"ok": true}',
+        )
+    except LLMError as exc:
+        print(f"LLM check failed: {exc}", file=sys.stderr)
+        return 1
+    print(f"LLM check passed: {reply}")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -31,7 +48,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("inputs", nargs="*", type=Path, help="TutorAgentInput JSON files")
     parser.add_argument("--all", action="store_true", help="run every file in modules/tutor/fixtures/")
+    parser.add_argument("--check-llm", action="store_true", help="make one live LLM call and exit")
     args = parser.parse_args(argv)
+
+    if args.check_llm:
+        return asyncio.run(_check_llm())
 
     paths = sorted(FIXTURES_DIR.glob("*.json")) if args.all else args.inputs
     if not paths:
