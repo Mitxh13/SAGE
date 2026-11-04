@@ -1,0 +1,42 @@
+{
+  "session_id": "fixture-u2_question_concept",
+  "unit_id": "unit_2_few_shot_cot",
+  "student_message": "Why does it matter which examples I pick for few-shot? Isn't any example fine?",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "If zero-shot prompting fails on an edge-case task, how should you structure few-shot examples to guide the model effectively?"
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "concept_question",
+    "answer_classification": "needs_scaffolding",
+    "detected_topic": "topic_in_context_exemplars",
+    "retrieval_query": "how to choose few-shot examples",
+    "misconception_verdicts": [],
+    "lcc_evaluation": {
+      "relevant_new": 0.0,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.0,
+      "irrelevant_old": 0.0,
+      "turn_note": "Concept question, no claim yet."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 1,
+    "scaffolding_stage": "QUESTION",
+    "overall_lcc_score": 0.0,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {}
+  },
+  "retrieved_chunks": [
+    {
+      "chunk_id": "u2_s07",
+      "unit_id": "unit_2_few_shot_cot",
+      "source_title": "Unit 2: In-Context Learning",
+      "slide_or_section": "Slide 7: Choosing Few-Shot Examples",
+      "excerpt": "Few-shot examples teach the model the input-output mapping. If most examples share one label, the model tends to predict that label, so balance the labels and include edge cases.",
+      "relevance_score": 0.89
+    }
+  ]
+}

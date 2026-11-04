@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from backend.schemas.contracts import TutorAgentInput, TutorAgentOutput
 from backend.services.interfaces import BaseSocraticTutor
+from modules.tutor.templates import build_template_reply
 
 
 class SocraticTutor(BaseSocraticTutor):
@@ -24,7 +25,9 @@ class SocraticTutor(BaseSocraticTutor):
         """
         Generate the reply for the orchestrator's selected stage.
 
+        Currently returns the deterministic template reply (no LLM).
+
         :param input_data: Validated TutorAgentInput contract.
         :return: Validated TutorAgentOutput contract.
         """
-        raise NotImplementedError("SocraticTutor.respond() is not implemented yet")
+        return build_template_reply(input_data)

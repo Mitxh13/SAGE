@@ -1,0 +1,57 @@
+{
+  "session_id": "fixture-u1_wrap_up",
+  "unit_id": "unit_1_prompt_structure",
+  "student_message": "Oh, I should tell it the exact format, like 'answer as a JSON object with keys summary and risks', and maybe put the user text inside tags.",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "When you write a prompt, how do you specify the exact format and structure you want the model to respond in?"
+    },
+    {
+      "role": "user",
+      "content": "So without a format it just picks a random style each time?"
+    },
+    {
+      "role": "assistant",
+      "content": "Exactly. So what's one thing you could add to your prompt to fix that?"
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "answer_attempt",
+    "answer_classification": "correct",
+    "detected_topic": "topic_output_formatting",
+    "retrieval_query": "explicit output format delimiters",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_implicit_format_expectation",
+        "misconception_label": "Assuming the LLM infers desired output format without explicit instructions",
+        "verdict": "weakened",
+        "evidence_quote": "I should tell it the exact format"
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.7,
+      "relevant_old": 0.2,
+      "irrelevant_new": 0.0,
+      "irrelevant_old": 0.0,
+      "turn_note": "Names explicit format and delimiters."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 0,
+    "scaffolding_stage": "WRAP_UP",
+    "overall_lcc_score": 0.85,
+    "topic_status": "DONE",
+    "active_misconceptions": {}
+  },
+  "retrieved_chunks": [
+    {
+      "chunk_id": "u1_s12",
+      "unit_id": "unit_1_prompt_structure",
+      "source_title": "Unit 1: Anatomy of an Effective Prompt",
+      "slide_or_section": "Slide 12: Specifying Output Format",
+      "excerpt": "If a prompt does not state the desired output format, the model falls back on whatever style is most likely given its training data, so structure varies from run to run. Stating the format explicitly (JSON, a table, bullet points) narrows the output distribution.",
+      "relevance_score": 0.91
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "session_id": "fixture-u1_explanation_stuck",
+  "unit_id": "unit_1_prompt_structure",
+  "student_message": "I really don't know. I've reworded it three times and it's still all over the place.",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "When you write a prompt, how do you specify the exact format and structure you want the model to respond in?"
+    },
+    {
+      "role": "user",
+      "content": "I don't think format matters. The model should just figure out what's best."
+    },
+    {
+      "role": "assistant",
+      "content": "Here's a nudge: re-read Slide 12 and compare it with your approach. What does the material do that your attempt doesn't?"
+    },
+    {
+      "role": "user",
+      "content": "Maybe I need more detail in the question?"
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "debug_request",
+    "answer_classification": "needs_scaffolding",
+    "detected_topic": "topic_output_formatting",
+    "retrieval_query": "specify output format consistent responses",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_implicit_format_expectation",
+        "misconception_label": "Assuming the LLM infers desired output format without explicit instructions",
+        "verdict": "absent",
+        "evidence_quote": ""
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.0,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.0,
+      "irrelevant_old": 0.0,
+      "turn_note": "No new relevant content; student is blocked."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 4,
+    "scaffolding_stage": "EXPLANATION",
+    "overall_lcc_score": -0.6,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {
+      "misc_implicit_format_expectation": 0.78
+    }
+  },
+  "retrieved_chunks": [
+    {
+      "chunk_id": "u1_s12",
+      "unit_id": "unit_1_prompt_structure",
+      "source_title": "Unit 1: Anatomy of an Effective Prompt",
+      "slide_or_section": "Slide 12: Specifying Output Format",
+      "excerpt": "If a prompt does not state the desired output format, the model falls back on whatever style is most likely given its training data, so structure varies from run to run. Stating the format explicitly (JSON, a table, bullet points) narrows the output distribution.",
+      "relevance_score": 0.91
+    }
+  ]
+}
