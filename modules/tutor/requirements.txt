@@ -1,0 +1,10 @@
+# Socratic Tutor (modules/tutor) Dependencies
+# ===========================================
+# Install from the repo root:  pip install -r modules/tutor/requirements.txt
+
+# Backend contracts & interfaces (pydantic, fastapi, ...)
+-r ../../backend/requirements.txt
+
+# Testing (httpx is needed by the backend's TestClient tests)
+pytest>=8.0.0
+httpx>=0.27.0
