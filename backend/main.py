@@ -1,20 +1,33 @@
 """
 FastAPI application entry point for SAGE backend.
 
-Sets up CORS, registers route controllers, and exposes system health checks.
+Sets up CORS, initializes SQLite database tables, registers route controllers,
+and exposes system health checks.
 
 Reference: docs/ARCHITECTURE.md §System flow & API contract
 """
 
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+from collections.abc import AsyncGenerator
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.config import get_settings
+from backend.database.db import init_db
 from backend.routers import chat, sessions, units
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Initialize database tables on application startup."""
+    init_db()
+    yield
+
 
 app = FastAPI(
     title=f"{settings.APP_NAME} Backend API",
@@ -25,6 +38,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # ── CORS Middleware ──────────────────────────────────────────────────────────
