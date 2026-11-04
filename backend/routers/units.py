@@ -12,8 +12,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from backend.schemas.api_schemas import UnitSummary
+from backend.schemas.taxonomy import UnitTaxonomy
 
 router = APIRouter(prefix="/units", tags=["Units"])
 
@@ -57,3 +58,22 @@ async def list_units() -> list[UnitSummary]:
             return loaded_units
 
     return DEFAULT_UNITS
+
+
+@router.get("/{unit_id}", response_model=UnitTaxonomy)
+async def get_unit(unit_id: str) -> UnitTaxonomy:
+    """Retrieve full taxonomy, topics, and starter questions for a specific unit."""
+    path = DATA_UNITS_DIR / f"{unit_id}.json"
+    if not path.exists():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Unit '{unit_id}' not found in taxonomy",
+        )
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return UnitTaxonomy.model_validate(data)
+    except Exception as err:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to parse taxonomy for unit '{unit_id}': {err}",
+        )
