@@ -1,0 +1,54 @@
+{
+  "session_id": "fixture-u3_explanation_no_chunks",
+  "unit_id": "unit_3_decoding_rag",
+  "student_message": "I still don't get it. If it always picks the most likely word, how can it be wrong?",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "What do you think the temperature parameter actually changes when a model generates text?"
+    },
+    {
+      "role": "user",
+      "content": "It makes the model more accurate when it's low."
+    },
+    {
+      "role": "assistant",
+      "content": "Here's a nudge: focus on what 'most likely' is measured against. Is the most likely token always the true one?"
+    },
+    {
+      "role": "user",
+      "content": "I guess so? Low temperature means less mistakes."
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "concept_question",
+    "answer_classification": "needs_scaffolding",
+    "detected_topic": "topic_decoding_parameters",
+    "retrieval_query": "temperature most likely token factual accuracy",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_zero_temp_factual_guarantee",
+        "misconception_label": "Believing temperature = 0 eliminates hallucinations",
+        "verdict": "reinforced",
+        "evidence_quote": "If it always picks the most likely word, how can it be wrong?"
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.0,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.0,
+      "irrelevant_old": 0.2,
+      "turn_note": "Still equates likelihood with truth."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 4,
+    "scaffolding_stage": "EXPLANATION",
+    "overall_lcc_score": -0.7,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {
+      "misc_zero_temp_factual_guarantee": 0.87
+    }
+  },
+  "retrieved_chunks": []
+}

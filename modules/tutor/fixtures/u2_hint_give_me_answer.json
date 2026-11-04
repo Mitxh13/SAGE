@@ -1,0 +1,59 @@
+{
+  "session_id": "fixture-u2_hint_give_me_answer",
+  "unit_id": "unit_2_few_shot_cot",
+  "student_message": "Just tell me what's wrong with my examples. 4 of my 5 examples are 'positive' and it keeps answering positive.",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "If zero-shot prompting fails on an edge-case task, how should you structure few-shot examples to guide the model effectively?"
+    },
+    {
+      "role": "user",
+      "content": "I gave it five examples but it labels almost everything positive."
+    },
+    {
+      "role": "assistant",
+      "content": "Walk me through your reasoning. Why do you expect that to work?"
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "give_me_answer",
+    "answer_classification": "needs_scaffolding",
+    "detected_topic": "topic_in_context_exemplars",
+    "retrieval_query": "few-shot label imbalance majority label bias",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_majority_label_bias",
+        "misconception_label": "Skewing few-shot exemplar distributions toward one class",
+        "verdict": "introduced",
+        "evidence_quote": "4 of my 5 examples are 'positive'"
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.1,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.2,
+      "irrelevant_old": 0.0,
+      "turn_note": "Describes the skewed example set without linking it to the output."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 2,
+    "scaffolding_stage": "HINT",
+    "overall_lcc_score": -0.1,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {
+      "misc_majority_label_bias": 0.43
+    }
+  },
+  "retrieved_chunks": [
+    {
+      "chunk_id": "u2_s07",
+      "unit_id": "unit_2_few_shot_cot",
+      "source_title": "Unit 2: In-Context Learning",
+      "slide_or_section": "Slide 7: Choosing Few-Shot Examples",
+      "excerpt": "Few-shot examples teach the model the input-output mapping. If most examples share one label, the model tends to predict that label, so balance the labels and include edge cases.",
+      "relevance_score": 0.89
+    }
+  ]
+}

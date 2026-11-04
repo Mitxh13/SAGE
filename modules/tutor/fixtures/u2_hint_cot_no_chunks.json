@@ -1,0 +1,46 @@
+{
+  "session_id": "fixture-u2_hint_cot_no_chunks",
+  "unit_id": "unit_2_few_shot_cot",
+  "student_message": "I put the final answer first and then the steps in my examples, it shouldn't matter which order.",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "Why might a model benefit from writing out its reasoning before answering?"
+    },
+    {
+      "role": "user",
+      "content": "It shows the work, but the order doesn't really change anything."
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "answer_attempt",
+    "answer_classification": "wrong",
+    "detected_topic": "topic_chain_of_thought",
+    "retrieval_query": "chain of thought reasoning before answer order",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_answer_before_rationale",
+        "misconception_label": "Placing the final answer before the intermediate reasoning steps",
+        "verdict": "reinforced",
+        "evidence_quote": "it shouldn't matter which order"
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.0,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.0,
+      "irrelevant_old": 0.3,
+      "turn_note": "Repeats the answer-first ordering."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 2,
+    "scaffolding_stage": "HINT",
+    "overall_lcc_score": -0.4,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {
+      "misc_answer_before_rationale": 0.65
+    }
+  },
+  "retrieved_chunks": []
+}

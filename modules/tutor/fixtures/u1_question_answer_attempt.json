@@ -1,0 +1,51 @@
+{
+  "session_id": "fixture-u1_question_answer_attempt",
+  "unit_id": "unit_1_prompt_structure",
+  "student_message": "I just asked the question directly. I figured the model would know what format I want.",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "When you write a prompt, how do you specify the exact format and structure you want the model to respond in?"
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "answer_attempt",
+    "answer_classification": "wrong",
+    "detected_topic": "topic_output_formatting",
+    "retrieval_query": "model infers output format without instructions",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_implicit_format_expectation",
+        "misconception_label": "Assuming the LLM infers desired output format without explicit instructions",
+        "verdict": "introduced",
+        "evidence_quote": "I figured the model would know what format I want"
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.0,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.3,
+      "irrelevant_old": 0.0,
+      "turn_note": "Introduces the implicit-format assumption."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 1,
+    "scaffolding_stage": "QUESTION",
+    "overall_lcc_score": -0.3,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {
+      "misc_implicit_format_expectation": 0.43
+    }
+  },
+  "retrieved_chunks": [
+    {
+      "chunk_id": "u1_s12",
+      "unit_id": "unit_1_prompt_structure",
+      "source_title": "Unit 1: Anatomy of an Effective Prompt",
+      "slide_or_section": "Slide 12: Specifying Output Format",
+      "excerpt": "If a prompt does not state the desired output format, the model falls back on whatever style is most likely given its training data, so structure varies from run to run. Stating the format explicitly (JSON, a table, bullet points) narrows the output distribution.",
+      "relevance_score": 0.91
+    }
+  ]
+}
