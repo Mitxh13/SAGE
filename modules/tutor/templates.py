@@ -14,7 +14,6 @@ Reference:
 from __future__ import annotations
 
 from backend.schemas.contracts import (
-    ConstraintsValidated,
     HelpRequestType,
     RetrievedChunk,
     ScaffoldingMove,
@@ -51,7 +50,12 @@ _APPLY_CHECK = "Now apply it to your original problem: what would you change, an
 # ════════════════════════════════════════════════════════════════════
 
 def build_template_reply(input_data: TutorAgentInput) -> TutorAgentOutput:
-    """Build a deterministic reply for the orchestrator's selected stage."""
+    """
+    Build a deterministic reply for the orchestrator's selected stage.
+
+    ``constraints_validated`` is left at its default; the agent fills it
+    from ``validator.validate_reply``.
+    """
     stage = input_data.updated_learner_state.scaffolding_stage
     intent = input_data.analyzer_result.help_request_type
     topic = _topic_title(input_data)
@@ -77,13 +81,6 @@ def build_template_reply(input_data: TutorAgentInput) -> TutorAgentOutput:
             f"cited: {', '.join(cited) or 'none'}."
         ),
         cited_chunk_ids=cited,
-        constraints_validated=ConstraintsValidated(
-            # Templates never state a fix in QUESTION / HINT turns.
-            no_direct_answer_leaked=True,
-            single_focused_question=_question_count_ok(stage, message),
-            course_grounded=stage in (ScaffoldingMove.QUESTION, ScaffoldingMove.WRAP_UP)
-            or bool(cited),
-        ),
     )
 
 
@@ -195,8 +192,3 @@ def _trim_excerpt(text: str) -> str:
 
 def _lower_first(text: str) -> str:
     return text[:1].lower() + text[1:]
-
-
-def _question_count_ok(stage: ScaffoldingMove, message: str) -> bool:
-    count = message.count("?")
-    return count <= 1 if stage == ScaffoldingMove.WRAP_UP else count == 1

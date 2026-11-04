@@ -36,9 +36,21 @@ python -m modules.tutor modules/tutor/fixtures/u1_hint_reinforced.json
 |---|---|
 | `agent.py` | `SocraticTutor`, the entry point the orchestrator calls |
 | `templates.py` | Fixed reply wording for each stage, filled in from the input (no LLM) |
+| `validator.py` | Rule checks that fill `constraints_validated` and list any violations |
 | `taxonomy.py` | Reads topic titles, misconceptions and expectations from `data/units/` (never writes to it) |
 | `__main__.py` | Command-line runner |
 | `fixtures/` | Sample `TutorAgentInput` files |
 
+## Validation
+Every reply goes through `validator.validate_reply()`, and `constraints_validated` is always taken from it, never from what the generator claims about itself.
+
+| Flag | Rule |
+|---|---|
+| `single_focused_question` | Exactly one `?` (WRAP_UP may have none). A `?` inside quotation marks doesn't count |
+| `course_grounded` | Cites only chunk IDs it was given. HINT and EXPLANATION must cite at least one when any were retrieved |
+| `no_direct_answer_leaked` | QUESTION and HINT turns must not contain any of these: a code block; a fix in a statement ("you should add…", "try adding…", "Add a…"); fix wording even inside a question ("the answer is…", "change your prompt to…"); 6 words in a row copied from a retrieved excerpt; or most of the words of a topic expectation |
+
+Some flags are `false` with no violation, when a retry couldn't fix the problem. For example, a HINT with no retrieved chunks can't be course-grounded.
+
 ## Status
-`respond()` currently returns the template replies. They follow every stage rule: one focused question, no answer leaked in QUESTION/HINT, and citations only from retrieved chunks. LLM generation comes next, and once it's in, these templates become the fallback.
+`respond()` currently returns the template replies, and all of them pass the validator. LLM generation comes next, and once it's in, these templates become the fallback.
