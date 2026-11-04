@@ -53,7 +53,7 @@
      * `weakened`: Student demonstrates conceptual correction or counter-evidence.
      * `absent`: Misconception was not exhibited in the turn.
   3. **LCC Evaluation:** Quantify turn contribution using Hu et al. (2025) metrics: Relevant-New ($RN$), Relevant-Old ($RO$), Irrelevant-New ($IN$), and Irrelevant-Old ($IO$).
-  4. **Unit Taxonomy (shared):** Draft `data/units/<unit_id>.json` for each unit — topics, starter questions, weighted expectations, and misconceptions with stable IDs. The orchestrator also reads these files, so changes need team agreement.
+  4. **Unit Taxonomy (shared):** Draft `data/units/<unit_id>.json` for each unit — topics, starter questions, weighted expectations, and misconceptions with stable IDs. The orchestrator and tutor also read these files, so changes need team agreement.
 * **Agent Rule:** When coding for Nidhi, work solely inside `modules/analyzer/` and the shared `data/units/` taxonomy. Ensure output matches the `AnalyzerOutput` JSON schema exactly.
 
 ---
@@ -66,6 +66,7 @@
      * `EXPLANATION` (Stage 3): Clear, course-grounded explanation of the concept, citing the unit/slide, followed by an application check.
   2. **Constraint Enforcement:** Enforce pure Socratic constraints (no code/prompt fixes leaked during Stages 1 and 2; single focused question).
   3. **Grounding:** Citing exact retrieved course chunk IDs and explaining the pedagogical reasoning behind each move.
+  4. **Taxonomy (read-only):** Reads the active topic's expectations from `data/units/<unit_id>.json` so it knows what must not be revealed in Stages 1 and 2.
 * **Agent Rule:** When coding for Tahir, work solely inside `modules/tutor/`. Ensure output matches the `TutorAgentOutput` JSON schema exactly.
 
 ---
@@ -197,6 +198,6 @@ All four modules integrate through these immutable contracts. Any AI coding agen
 1. **Isolation First:** Each module developer can test their module independently using stubbed inputs matching the contracts above.
 2. **Never Break Contracts:** Do not modify field names or value types in `AnalyzerInput/Output`, `RetrieverInput/Output`, or `TutorAgentInput/Output` without team consensus.
 3. **Pluggable Integration:** Mitesh's orchestrator maintains mock adapters. Teammates connect by:
-   * **Default — direct Python import** (shared repository / virtual environment). Each module exposes one function taking and returning a dict that matches its contract: `modules.analyzer.analyze()`, `modules.rag.retrieve()`, `modules.tutor.respond()`.
+   * **Default — direct Python import** (shared repository / virtual environment). Each module provides a class implementing its interface in `backend/services/interfaces.py` — `BaseUnderstandingAnalyzer.analyze()`, `BaseCourseRetriever.retrieve()`, `BaseSocraticTutor.respond()` — async methods that take and return the Pydantic contract models in `backend/schemas/contracts.py`.
    * Optional — standalone microservices via HTTP endpoints (`POST /analyze`, `POST /retrieve`, `POST /tutor`).
 4. **Pedagogical Integrity:** Always preserve the core rule: **Never give the direct answer first on diagnostic turns.** Let the student do the thinking.

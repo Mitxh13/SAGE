@@ -207,7 +207,7 @@ While Thonge & Thakkar's *Socratic AI* enforced a strict "Question-Only" constra
 
 ## 8. Course Domain Scope: *Prompt Engineering and Generative AI* (2–3 Units)
 
-To keep the mini-project realistic, focused, and testable, SAGE's knowledge base and misconception taxonomy are scoped to **2–3 units** of the *Prompt Engineering and Generative AI* elective. Each unit's topics, starter questions, weighted expectations, and misconceptions live in a shared file `data/units/<unit_id>.json` (drafted by Nidhi, read by the analyzer and orchestrator). Working unit list:
+To keep the mini-project realistic, focused, and testable, SAGE's knowledge base and misconception taxonomy are scoped to **2–3 units** of the *Prompt Engineering and Generative AI* elective. Each unit's topics, starter questions, weighted expectations, and misconceptions live in a shared file `data/units/<unit_id>.json` (drafted by Nidhi; read by the analyzer, orchestrator, and tutor). Working unit list:
 1. **Unit 1: Prompt Structure, Role, Constraints & Output Formatting**
    * *Key Expectations:* Specifying persona/role, explicit output format (JSON/Markdown/table), task context, and boundary constraints reduces output variance.
    * *Common Misconceptions:* Believing vague one-line questions guarantee deterministic formatting; confusing system instructions with user data; assuming longer prompts always improve accuracy without structure.
