@@ -23,6 +23,7 @@ flowchart LR
     TU --> LLM
     AN -.reads.-> TAX[data/units taxonomy]
     ORC -.reads.-> TAX
+    TU -.reads.-> TAX
 ```
 
 The frontend does **no** pedagogical reasoning. All analysis, state math, retrieval and move selection happen in the backend.
@@ -63,12 +64,12 @@ Each module owns one directory. Nobody edits another member's directory. Full ow
   - Center: chat with stage badges and citation cards.
   - Right: Inspector drawer, collapsed by default.
 - `backend/` — **Mitesh.** FastAPI routes, SQLAlchemy models, the orchestrator (`services/orchestrator.py`) with all state math and stage selection, and the module adapters plus mocks (`USE_MOCK_AI=true`).
-- `modules/rag/` — **Jignas.** Ingests and chunks the Unit 1–3 slides and notes, builds the vector index, and exposes `retrieve(RetrieverInput) -> RetrieverOutput`.
-- `modules/analyzer/` — **Nidhi.** Intent and answer classification, misconception verdicts, and LCC decomposition. Exposes `analyze(AnalyzerInput) -> AnalyzerOutput`.
-- `modules/tutor/` — **Tahir.** Writes the reply for a given stage, cites chunks, and validates its constraints. Exposes `respond(TutorAgentInput) -> TutorAgentOutput`.
-- `data/units/` — **shared; Nidhi drafts it.** One JSON file per unit holding its topics, starter questions, expectations and misconceptions. The analyzer and the orchestrator both read it. Changes need the team's agreement.
+- `modules/rag/` — **Jignas.** Ingests and chunks the Unit 1–3 slides and notes, builds the vector index, and implements `BaseCourseRetriever`.
+- `modules/analyzer/` — **Nidhi.** Intent and answer classification, misconception verdicts, and LCC decomposition. Implements `BaseUnderstandingAnalyzer`.
+- `modules/tutor/` — **Tahir.** Writes the reply for a given stage, cites chunks, and validates its constraints. Implements `BaseSocraticTutor`.
+- `data/units/` — **shared; Nidhi drafts it.** One JSON file per unit holding its topics, starter questions, expectations and misconceptions. The analyzer, the orchestrator and the tutor read it; the tutor uses the expectations to know what it must not reveal. Changes need the team's agreement.
 
-**Integration:** the backend imports the three modules directly as Python functions in one virtualenv. Each function takes and returns a dict matching its contract. HTTP services (`POST /analyze`, `/retrieve`, `/tutor`) are an optional alternative. The inter-module JSON contracts are defined in [TEAM_MODULE_DIVISION.md §3](TEAM_MODULE_DIVISION.md#3-standardized-inter-module-json-contracts), which is the single source of truth.
+**Integration:** the backend imports the three modules directly in one virtualenv. Each module provides a class that implements its interface in `backend/services/interfaces.py`. That interface is one async method (`analyze`, `retrieve` or `respond`) which takes and returns the Pydantic contract models in `backend/schemas/contracts.py`. HTTP services (`POST /analyze`, `/retrieve`, `/tutor`) are an optional alternative. The Pydantic models mirror the JSON contracts in [TEAM_MODULE_DIVISION.md §3](TEAM_MODULE_DIVISION.md#3-standardized-inter-module-json-contracts), which stay the single source of truth.
 
 ## API contract (frontend ↔ backend)
 

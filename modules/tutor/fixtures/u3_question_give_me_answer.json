@@ -1,0 +1,51 @@
+{
+  "session_id": "fixture-u3_question_give_me_answer",
+  "unit_id": "unit_3_decoding_rag",
+  "student_message": "I set temperature to 0 and it still made up a citation. What's the setting that stops hallucinations?",
+  "conversation_history": [
+    {
+      "role": "assistant",
+      "content": "What do you think the temperature parameter actually changes when a model generates text?"
+    }
+  ],
+  "analyzer_result": {
+    "help_request_type": "give_me_answer",
+    "answer_classification": "wrong",
+    "detected_topic": "topic_decoding_parameters",
+    "retrieval_query": "temperature 0 hallucination",
+    "misconception_verdicts": [
+      {
+        "misconception_id": "misc_zero_temp_factual_guarantee",
+        "misconception_label": "Believing temperature = 0 eliminates hallucinations",
+        "verdict": "introduced",
+        "evidence_quote": "What's the setting that stops hallucinations?"
+      }
+    ],
+    "lcc_evaluation": {
+      "relevant_new": 0.0,
+      "relevant_old": 0.0,
+      "irrelevant_new": 0.3,
+      "irrelevant_old": 0.0,
+      "turn_note": "Expects a decoding setting to fix factual errors."
+    }
+  },
+  "updated_learner_state": {
+    "struggle_turn_count": 1,
+    "scaffolding_stage": "QUESTION",
+    "overall_lcc_score": -0.3,
+    "topic_status": "IN_PROGRESS",
+    "active_misconceptions": {
+      "misc_zero_temp_factual_guarantee": 0.43
+    }
+  },
+  "retrieved_chunks": [
+    {
+      "chunk_id": "u3_s05",
+      "unit_id": "unit_3_decoding_rag",
+      "source_title": "Unit 3: Decoding and Hallucinations",
+      "slide_or_section": "Slide 5: Temperature and Top-p",
+      "excerpt": "Temperature reshapes the token probability distribution; at temperature 0 the model always picks the most likely token. That makes output repeatable, not factually correct: a model can repeat the same wrong fact every time.",
+      "relevance_score": 0.92
+    }
+  ]
+}
