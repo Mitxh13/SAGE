@@ -27,7 +27,7 @@ def _load(path: Path) -> dict:
 
 def _respond(raw: dict) -> tuple[TutorAgentInput, TutorAgentOutput]:
     input_data = TutorAgentInput.model_validate(raw)
-    return input_data, asyncio.run(SocraticTutor().respond(input_data))
+    return input_data, asyncio.run(SocraticTutor(use_llm=False).respond(input_data))
 
 
 def _fixture(name: str) -> dict:

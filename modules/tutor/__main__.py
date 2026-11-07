@@ -66,7 +66,7 @@ async def _run(inputs: list[tuple[Path, TutorAgentInput]], use_llm: bool) -> int
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
-    tutor = SocraticTutor()
+    tutor = SocraticTutor(use_llm=False)
     exit_code = 0
     for path, input_data in inputs:
         print(f"── {path.name}")
