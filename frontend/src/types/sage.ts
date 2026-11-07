@@ -69,4 +69,6 @@ export interface TurnResponse {
   message: Message;
   learner_state: LearnerState;
   trace: TurnTrace;
+  /** Set only after WRAP_UP: the next topic's starter question or a unit-complete note. */
+  follow_up_message?: Message | null;
 }

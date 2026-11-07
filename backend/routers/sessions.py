@@ -15,9 +15,6 @@ Reference:
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -29,11 +26,9 @@ from backend.schemas.api_schemas import (
     SessionSummary,
 )
 from backend.schemas.contracts import ScaffoldingMove, TopicStatus
-from backend.schemas.taxonomy import UnitTaxonomy
+from backend.services.unit_taxonomy import load_unit_taxonomy
 
 router = APIRouter(prefix="/sessions", tags=["Sessions"])
-
-DATA_UNITS_DIR = Path("data/units")
 
 # Fallback starter question if taxonomy file is missing
 DEFAULT_STARTER_QUESTION = (
@@ -41,18 +36,6 @@ DEFAULT_STARTER_QUESTION = (
     "To get started: when you write a prompt, how do you specify the exact format "
     "and structure you want the model to respond in?"
 )
-
-
-def _load_unit_taxonomy(unit_id: str) -> UnitTaxonomy | None:
-    """Load and parse unit taxonomy JSON if available."""
-    path = DATA_UNITS_DIR / f"{unit_id}.json"
-    if path.exists():
-        try:
-            data = json.loads(path.read_text(encoding="utf-8"))
-            return UnitTaxonomy.model_validate(data)
-        except Exception:
-            return None
-    return None
 
 
 @router.post(
@@ -75,7 +58,7 @@ async def create_session(
     repo = SageRepository(db)
 
     # 1. Determine active topic and starter question from taxonomy
-    taxonomy = _load_unit_taxonomy(request.unit_id)
+    taxonomy = load_unit_taxonomy(request.unit_id)
     if taxonomy and taxonomy.topics:
         active_topic = taxonomy.topics[0]
         active_topic_id = active_topic.topic_id

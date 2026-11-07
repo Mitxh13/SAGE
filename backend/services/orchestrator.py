@@ -45,6 +45,7 @@ from backend.services.state_math import (
     update_misconception_confidences,
     update_struggle_turn_count,
 )
+from backend.services.unit_taxonomy import load_unit_taxonomy, next_topic
 
 
 class TutoringOrchestrator:
@@ -79,6 +80,8 @@ class TutoringOrchestrator:
         4. Retrieve relevant course chunks via CourseRetriever.
         5. Generate pedagogical response via SocraticTutorAgent for the chosen stage.
         6. Persist assistant message, updated state, and turn trace to SQLite; return TurnResponse.
+           On WRAP_UP, also advance to the unit's next topic and post its starter question
+           as a separate assistant message (``TurnResponse.follow_up_message``).
         """
         start_time = time.perf_counter()
 
@@ -213,16 +216,36 @@ class TutoringOrchestrator:
             citations=citations,
         )
 
+        # Topic advance after WRAP_UP: post the next topic's starter question
+        # (or a unit-complete note) as its own assistant message, and start
+        # the learner state fresh for that topic. Misconceptions carry over
+        # and keep decaying.
+        state_stage, state_status = scaffolding_stage, topic_status
+        follow_up_model = None
+        if scaffolding_stage == ScaffoldingMove.WRAP_UP:
+            follow_up_text, follow_up_move, active_topic_id = self._advance_topic(
+                session.unit_id, active_topic_id
+            )
+            follow_up_model = self.repo.save_message(
+                session_id=session_id,
+                role="assistant",
+                content=follow_up_text,
+                scaffolding_move=follow_up_move,
+                citations=[],
+            )
+            accum_correct, accum_wrong, overall_lcc, updated_struggle = 0.0, 0.0, 0.0, 0
+            state_stage, state_status = ScaffoldingMove.QUESTION, TopicStatus.IN_PROGRESS
+
         # Persist updated learner state in SQLite
         persisted_state = self.repo.create_or_update_learner_state(
             session_id=session_id,
             active_topic_id=active_topic_id,
             struggle_turn_count=updated_struggle,
-            scaffolding_stage=scaffolding_stage,
+            scaffolding_stage=state_stage,
             overall_lcc_score=overall_lcc,
             accumulated_correct_score=accum_correct,
             accumulated_wrong_score=accum_wrong,
-            topic_status=topic_status,
+            topic_status=state_status,
             active_misconceptions=updated_misconceptions,
         )
 
@@ -268,4 +291,41 @@ class TutoringOrchestrator:
                 latency_ms=latency_ms,
                 created_at=trace_model.created_at,
             ),
+            follow_up_message=(
+                MessageResponse(
+                    id=follow_up_model.id,
+                    role=follow_up_model.role,
+                    content=follow_up_model.content,
+                    scaffolding_move=ScaffoldingMove(follow_up_model.scaffolding_move),
+                    citations=[],
+                    created_at=follow_up_model.created_at,
+                )
+                if follow_up_model
+                else None
+            ),
+        )
+
+    @staticmethod
+    def _advance_topic(
+        unit_id: str, topic_id: str | None
+    ) -> tuple[str, ScaffoldingMove, str | None]:
+        """
+        Decide what follows a topic wrap-up.
+
+        :return: (follow-up message, its scaffolding move, new active topic id)
+        """
+        upcoming = next_topic(unit_id, topic_id)
+        if upcoming is not None:
+            return (
+                f"Next up: {upcoming.title}. {upcoming.starter_question}",
+                ScaffoldingMove.QUESTION,
+                upcoming.topic_id,
+            )
+        taxonomy = load_unit_taxonomy(unit_id)
+        unit_title = taxonomy.title if taxonomy else "this unit"
+        return (
+            f"You've finished every topic in {unit_title}. "
+            "Ask about anything you'd like to revisit, or start another unit.",
+            ScaffoldingMove.WRAP_UP,
+            topic_id,
         )
