@@ -13,7 +13,7 @@ from modules.tutor import SocraticTutor
 
 def test_tutor_implements_interface() -> None:
     """SocraticTutor is a concrete BaseSocraticTutor the orchestrator can instantiate."""
-    tutor = SocraticTutor()
+    tutor = SocraticTutor(use_llm=False)
     assert isinstance(tutor, BaseSocraticTutor)
 
 

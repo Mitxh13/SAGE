@@ -13,6 +13,8 @@ from modules.tutor import SocraticTutor
 output = await SocraticTutor().respond(tutor_agent_input)  # TutorAgentInput -> TutorAgentOutput
 ```
 
+`SocraticTutor()` builds its LLM client from the `LLM_*` settings in `.env`. If those aren't set, it logs a warning and uses template replies. For tests, pass `llm=FakeLLM([...])`, or `use_llm=False` to get templates only.
+
 The contract models live in `backend/schemas/contracts.py` and mirror `docs/TEAM_MODULE_DIVISION.md` §3.3.
 
 ## Setup & tests
@@ -69,5 +71,15 @@ Every reply goes through `validator.validate_reply()`, and `constraints_validate
 
 Some flags are `false` with no violation, when a retry couldn't fix the problem. For example, a HINT with no retrieved chunks can't be course-grounded.
 
+## How `respond()` works
+1. Generate a reply with the LLM and run `validate_reply()` on it.
+2. If it breaks a rule, retry once. The retry prompt lists the rules the first reply broke.
+3. Use the template reply instead if any of these happen:
+   - the retry also breaks a rule;
+   - the LLM errors or returns malformed JSON;
+   - the LLM path takes longer than `LLM_BUDGET_S` (6 s).
+
+Whatever `respond()` returns has passed the validator. When it falls back, `pedagogical_reasoning` says why (for example `Fallback: the LLM took longer than 6s.`), so the Inspector shows it.
+
 ## Status
-`respond()` still returns the template replies, and all of them pass the validator. LLM generation works through `generate_reply()` and `--llm`, but `respond()` won't use it until the guard loop is in. The guard loop validates each LLM reply, retries once with the violations, and falls back to the template if the retry also fails. That way no unchecked LLM reply ever reaches a student.
+`respond()` uses the LLM behind the guard loop. Without an API key it uses the template replies. The `--llm` CLI flag still shows the LLM's raw reply and the validator's verdict, before any retry or fallback, for prompt tuning.
