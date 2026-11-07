@@ -110,6 +110,32 @@ def test_slow_llm_falls_back_within_budget(monkeypatch: pytest.MonkeyPatch) -> N
     assert "longer than 0.05s" in output.pedagogical_reasoning
 
 
+@pytest.mark.parametrize(
+    ("responses", "outcome"),
+    [
+        ([_reply(GOOD_HINT, ["u1_s12"])], "llm"),
+        ([_reply(LEAKY_HINT, ["u1_s12"]), _reply(GOOD_HINT, ["u1_s12"])], "llm_retry"),
+        ([_reply(LEAKY_HINT, ["u1_s12"]), _reply(LEAKY_HINT, ["u1_s12"])], "fallback_rules"),
+        ([LLMError("boom")], "fallback_error"),
+    ],
+)
+def test_last_outcome_records_how_the_reply_was_made(responses: list, outcome: str) -> None:
+    tutor = SocraticTutor(llm=FakeLLM(responses))
+    _respond(tutor, _input("u1_hint_reinforced"))
+    assert tutor.last_outcome.value == outcome
+
+
+def test_last_outcome_for_templates_and_timeouts(monkeypatch: pytest.MonkeyPatch) -> None:
+    tutor = SocraticTutor(use_llm=False)
+    _respond(tutor, _input("u1_question_debug"))
+    assert tutor.last_outcome.value == "template"
+
+    monkeypatch.setattr(agent_module, "LLM_BUDGET_S", 0.05)
+    slow = SocraticTutor(llm=_SlowLLM())
+    _respond(slow, _input("u1_question_debug"))
+    assert slow.last_outcome.value == "fallback_timeout"
+
+
 # ════════════════════════════════════════════════════════════════════
 # Construction
 # ════════════════════════════════════════════════════════════════════
