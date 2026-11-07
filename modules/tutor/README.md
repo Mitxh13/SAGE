@@ -59,6 +59,7 @@ Use `--llm` to tune the prompts. It prints each LLM reply, the flags the validat
 | `taxonomy.py` | Reads topic titles, misconceptions and expectations from `data/units/` (never writes to it) |
 | `__main__.py` | Command-line runner |
 | `fixtures/` | Sample `TutorAgentInput` files |
+| `eval/` | The test runner: scripted conversations, runner, LLM leak judge, report |
 
 ## Validation
 Every reply goes through `validator.validate_reply()`, and `constraints_validated` is always taken from it, never from what the generator claims about itself.
@@ -70,6 +71,30 @@ Every reply goes through `validator.validate_reply()`, and `constraints_validate
 | `no_direct_answer_leaked` | QUESTION and HINT turns must not contain any of these: a code block; a fix in a statement ("you should add…", "try adding…", "Add a…"); fix wording even inside a question ("the answer is…", "change your prompt to…"); 6 words in a row copied from a retrieved excerpt; or most of the words of a topic expectation |
 
 Some flags are `false` with no violation, when a retry couldn't fix the problem. For example, a HINT with no retrieved chunks can't be course-grounded.
+
+## Evaluation
+`eval/` runs 31 scripted student conversations (10 or more per unit) through the full SAGE turn loop. That means the real session start and Mitesh's `TutoringOrchestrator`, with the configured analyzer and retriever, using a temporary database. The conversations cover:
+- "just give me the answer" pressure;
+- prompt injection;
+- students who stay stuck;
+- frustration;
+- off-topic turns;
+- quick correct answers.
+
+```bash
+python -m modules.tutor.eval                                          # template tutor, fully offline
+python -m modules.tutor.eval --llm --judge --out .devyard/tahir/eval  # LLM tutor + LLM leak judge
+python -m modules.tutor.eval --unit unit_1_prompt_structure --limit 3 --llm --delay 2
+```
+
+The report checks the PRD targets:
+- no delivered reply breaks a rule;
+- the LLM judge finds no leaks in QUESTION/HINT turns;
+- every HINT/EXPLANATION cites a chunk;
+- every unit reaches WRAP_UP;
+- the tutor's p95 latency is ≤ 4 s.
+
+It also shows LLM outcomes (passed first try, passed on retry, fell back and why), each conversation's path through the stages (e.g. `Q H H E W`), and the turns to review. The command exits with 1 if any check fails. Use `--delay` to stay under the free-tier rate limits.
 
 ## How `respond()` works
 1. Generate a reply with the LLM and run `validate_reply()` on it.
