@@ -96,24 +96,15 @@ def get_tutor(settings: Settings | None = None) -> BaseSocraticTutor:
     if cfg.should_mock_tutor:
         return MockSocraticTutor()
 
-    # Attempt direct Python import of Tahir's module
+    # Direct Python import of Tahir's module (SocraticTutor implements BaseSocraticTutor)
     try:
-        from modules.tutor import respond  # type: ignore
-
-        class LiveTutorAdapter(BaseSocraticTutor):
-            async def respond(self, input_data):
-                res = respond(input_data.model_dump())
-                if isinstance(res, dict):
-                    from backend.schemas.contracts import TutorAgentOutput
-                    return TutorAgentOutput.model_validate(res)
-                return res
-
-        return LiveTutorAdapter()
+        from modules.tutor import SocraticTutor
     except ImportError:
         logger.warning(
             "Live tutor module 'modules.tutor' not found. Falling back to MockSocraticTutor."
         )
         return MockSocraticTutor()
+    return SocraticTutor()
 
 
 def get_orchestrator(

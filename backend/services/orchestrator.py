@@ -185,17 +185,21 @@ class TutoringOrchestrator:
         )
         tutor_output = await self.tutor.respond(tutor_input)
 
-        # Build citations from cited chunks
+        # Build citations from the chunks the tutor actually cited.
+        # Excerpts often state the answer, so they are only shown once the
+        # tutor is allowed to explain (EXPLANATION / WRAP_UP); earlier stages
+        # show just the source and slide.
         cited_ids = set(tutor_output.cited_chunk_ids)
+        show_excerpts = scaffolding_stage in (ScaffoldingMove.EXPLANATION, ScaffoldingMove.WRAP_UP)
         citations: list[CitationItem] = [
             CitationItem(
                 chunk_id=c.chunk_id,
                 source_title=c.source_title,
                 slide_or_section=c.slide_or_section,
-                excerpt=c.excerpt,
+                excerpt=c.excerpt if show_excerpts else None,
             )
             for c in retriever_output.chunks
-            if not cited_ids or c.chunk_id in cited_ids
+            if c.chunk_id in cited_ids
         ]
 
         # ── Step 6: Delivery & State Persistence (Mitesh) ────────────────
