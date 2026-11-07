@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Activity,
-  AlertTriangle,
   Award,
   ChevronDown,
   ChevronRight,
