@@ -131,7 +131,7 @@ export const App: React.FC = () => {
             role: 'user',
             content,
             created_at: new Date().toISOString(),
-          }, turnResp.message],
+          }, turnResp.message, ...(turnResp.follow_up_message ? [turnResp.follow_up_message] : [])],
           learner_state: turnResp.learner_state,
           traces: [...prev.traces, turnResp.trace],
         };

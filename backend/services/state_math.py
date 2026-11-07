@@ -51,7 +51,8 @@ def update_misconception_confidences(
     Rules (Thonge & Thakkar, 2026 §7.3):
     1. First Introduced: C(m) = 0.43 (0.32 + 0.11)
     2. Reinforced: C(m) = min(1.0, C(m) + 0.22)
-    3. Weakened: C(m) = max(0.0, C(m) - 0.18)
+    3. Weakened: C(m) = max(0.0, C(m) - 0.18); ignored if m is not active
+       (nothing to weaken, so correct answers can't revive a resolved misconception)
     4. Absent (not mentioned in current turn): C(m) = C(m) * 0.90
     5. Resolved: C(m) < 0.18 -> removed from active tracking
 
@@ -79,8 +80,8 @@ def update_misconception_confidences(
             updated[m_id] = round(min(1.0, current_conf + REINFORCE_STEP), 4)
 
         elif verdict == MisconceptionVerdict.WEAKENED:
-            current_conf = updated.get(m_id, INITIAL_INTRODUCED_CONFIDENCE)
-            updated[m_id] = round(max(0.0, current_conf - WEAKEN_STEP), 4)
+            if m_id in updated:
+                updated[m_id] = round(max(0.0, updated[m_id] - WEAKEN_STEP), 4)
 
         elif verdict == MisconceptionVerdict.ABSENT:
             if m_id in updated:

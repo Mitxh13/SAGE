@@ -36,7 +36,7 @@ For each student message, the orchestrator runs these steps:
 3. **Update state** (orchestrator only):
    - **Misconception confidence:** a misconception enters `active_misconceptions` at **0.43** when it is first `introduced`.
      - `reinforced`: +0.22, capped at 1.0
-     - `weakened`: −0.18, with a floor of 0.0
+     - `weakened`: −0.18, with a floor of 0.0; ignored if the misconception isn't active
      - `absent`: ×0.90
      - Below **0.18** it is resolved and removed.
    - **LCC score:** accumulate the analyzer's contributions into `overall_lcc_score`, using (RN + RO) − (IN + IO) summed over the turns.
@@ -45,13 +45,16 @@ For each student message, the orchestrator runs these steps:
 
      | Condition | Stage |
      |---|---|
-     | `overall_lcc_score > 0.8` (`topic_status = DONE`) | `WRAP_UP` |
+     | `overall_lcc_score > 0.8` **and** no active misconceptions (`topic_status = DONE`) | `WRAP_UP` |
      | `struggle_turn_count ≥ 4` | `EXPLANATION` |
      | `struggle_turn_count ≥ 2` **or** any confidence ≥ 0.65 | `HINT` |
      | otherwise | `QUESTION` |
 
 4. **Retrieve** course chunks using `retrieval_query` and `unit_id`.
-5. **Tutor** writes the reply for the chosen stage. It never picks or overrides the stage. On `WRAP_UP`, the orchestrator moves to the unit's next topic and posts that topic's starter question.
+5. **Tutor** writes the reply for the chosen stage. It never picks or overrides the stage.
+   - On `WRAP_UP`, the orchestrator moves to the unit's next topic and posts "Next up: {title}." plus that topic's starter question as a **separate** assistant message (`follow_up_message`, marked `QUESTION`).
+   - It resets the score and the struggle count for the new topic. Misconceptions carry over and keep decaying.
+   - After the last topic, the follow-up is a short unit-complete note instead.
 6. Save the assistant message and a `TurnTrace`, then return both to the UI.
 
 A `give_me_answer` intent never skips a stage. Session start: `POST /api/sessions` sets the unit's first topic as active and posts its starter question as the first assistant message.
@@ -79,7 +82,7 @@ Each module owns one directory. Nobody edits another member's directory. Full ow
 | POST | `/api/sessions` | `{ unit_id }` | `{ session_id, unit_id, messages: [Message] }` (with starter question) |
 | GET | `/api/sessions` | — | `[{ session_id, unit_id, title, created_at }]` |
 | GET | `/api/sessions/{id}` | — | `{ session_id, unit_id, messages: [Message], learner_state, traces: [TurnTrace] }` |
-| POST | `/api/sessions/{id}/messages` | `{ content }` | `{ message: Message, learner_state, trace: TurnTrace }` |
+| POST | `/api/sessions/{id}/messages` | `{ content }` | `{ message: Message, learner_state, trace: TurnTrace, follow_up_message?: Message }` |
 
 `Message` = `{ id, role, content, scaffolding_move?, citations?: [{ chunk_id, source_title, slide_or_section }] }`
 

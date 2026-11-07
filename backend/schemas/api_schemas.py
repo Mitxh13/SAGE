@@ -134,7 +134,11 @@ class TurnResponse(BaseModel):
     """
     Response returned after the orchestrator completes the 6-step turn loop.
     Contains the assistant's reply, the updated learner state, and the turn trace.
+
+    ``follow_up_message`` is set only after a WRAP_UP: the next topic's
+    starter question, or a unit-complete note after the last topic.
     """
     message: MessageResponse
     learner_state: LearnerStateResponse
     trace: TurnTraceResponse
+    follow_up_message: MessageResponse | None = None

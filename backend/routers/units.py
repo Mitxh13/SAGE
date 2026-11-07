@@ -10,15 +10,13 @@ Reference: docs/ARCHITECTURE.md §API contract
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, status
 from backend.schemas.api_schemas import UnitSummary
 from backend.schemas.taxonomy import UnitTaxonomy
+from backend.services.unit_taxonomy import DATA_UNITS_DIR
 
 router = APIRouter(prefix="/units", tags=["Units"])
-
-DATA_UNITS_DIR = Path("data/units")
 
 # Canonical fallback units based on docs/CONTEXT.md §8
 DEFAULT_UNITS: list[UnitSummary] = [

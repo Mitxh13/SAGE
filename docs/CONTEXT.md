@@ -189,6 +189,7 @@ After each learner turn, the analyzer evaluates the student's utterance and emit
   $$C_{t}(m) = \min\left(1.0,\; C_{t-1}(m) + 0.22\right)$$
 * **When Weakened (`weakened`):** Asymmetric downward step of $-0.18$ (intentionally smaller in magnitude than $+0.22$ because a single correct-sounding response is insufficient evidence of durable repair):
   $$C_{t}(m) = \max\left(0.0,\; C_{t-1}(m) - 0.18\right)$$
+  A `weakened` verdict for a misconception that is not currently active (never introduced, or already resolved) is ignored — there is nothing to weaken.
 * **When Unmentioned (`absent` — Passive Decay):** Decays passively by $10\%$ so stale misconceptions fade when the student moves to a new topic:
   $$C_{t}(m) = C_{t-1}(m) \times 0.90$$
 * **Resolution Threshold:** A misconception is marked **resolved** and removed from active targeting when:
@@ -196,7 +197,7 @@ After each learner turn, the analyzer evaluates the student's utterance and emit
 
 ### 7.4 How SAGE Adapts Thonge & Thakkar's Constraints
 While Thonge & Thakkar's *Socratic AI* enforced a strict "Question-Only" constraint (which they noted caused frustration under time pressure), **SAGE** explicitly addresses this limitation via its **$\text{Question} \rightarrow \text{Hint} \rightarrow \text{Explanation}$** escalation policy. The orchestrator selects the stage each turn; the first matching rule wins (canonical copy: `docs/ARCHITECTURE.md`):
-* **`WRAP_UP`:** $\text{Overall\_Score} > 0.8$ (`topic_status = DONE`). Positive wrap-up feedback; the orchestrator then advances to the unit's next topic and posts its starter question.
+* **`WRAP_UP`:** $\text{Overall\_Score} > 0.8$ **and** no active misconceptions (`topic_status = DONE`). Positive wrap-up feedback; the orchestrator then advances to the unit's next topic and posts its starter question as a separate message (or a unit-complete note after the last topic), resetting the score and struggle count.
 * **Stage 3 (`EXPLANATION`):** struggle count $\ge 4$. Delivers a clear, course-grounded explanation of the concept, cites the course slide/unit, and asks the student to apply it to their original problem.
 * **Stage 2 (`HINT`):** struggle count $\ge 2$, **or** any active misconception has $C \ge 0.65$ (i.e., it was `reinforced` at least once). Provides a targeted conceptual cue grounded in retrieved course material plus a guiding question.
 * **Stage 1 (`QUESTION`):** otherwise (default). Prohibits direct fixes; asks a single focused diagnostic or contrasting question.
