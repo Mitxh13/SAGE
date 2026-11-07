@@ -38,9 +38,12 @@ To check the connection with one small live call, run `python -m modules.tutor -
 Each file in `fixtures/` is a realistic `TutorAgentInput`. Together they cover every stage across Units 1–3, including "just give me the answer" requests and turns where the retriever found nothing.
 
 ```bash
-python -m modules.tutor --all                                      # run every fixture
+python -m modules.tutor --all                                      # template replies for every fixture
 python -m modules.tutor modules/tutor/fixtures/u1_hint_reinforced.json
+python -m modules.tutor --all --llm                                # LLM replies plus validator verdicts (needs .env)
 ```
+
+Use `--llm` to tune the prompts. It prints each LLM reply, the flags the validator gave it, and any violations.
 
 ## Layout
 | File | Purpose |
@@ -49,6 +52,8 @@ python -m modules.tutor modules/tutor/fixtures/u1_hint_reinforced.json
 | `templates.py` | Fixed reply wording for each stage, filled in from the input (no LLM) |
 | `validator.py` | Rule checks that fill `constraints_validated` and list any violations |
 | `llm.py` | `GeminiClient` (JSON output, 8 s timeout, one retry on transient errors), `FakeLLM` for tests, `build_llm_client()` |
+| `prompts.py` | `SYSTEM_PROMPT` (the Socratic rules) and `build_user_prompt()` (the context for each turn, with instructions for its stage) |
+| `generator.py` | `generate_reply()`: one LLM call, which becomes a `TutorAgentOutput` for the input's stage |
 | `taxonomy.py` | Reads topic titles, misconceptions and expectations from `data/units/` (never writes to it) |
 | `__main__.py` | Command-line runner |
 | `fixtures/` | Sample `TutorAgentInput` files |
@@ -65,4 +70,4 @@ Every reply goes through `validator.validate_reply()`, and `constraints_validate
 Some flags are `false` with no violation, when a retry couldn't fix the problem. For example, a HINT with no retrieved chunks can't be course-grounded.
 
 ## Status
-`respond()` currently returns the template replies, and all of them pass the validator. The LLM client is ready, but `respond()` doesn't use it yet. Once LLM generation is wired in, these templates become the fallback.
+`respond()` still returns the template replies, and all of them pass the validator. LLM generation works through `generate_reply()` and `--llm`, but `respond()` won't use it until the guard loop is in. The guard loop validates each LLM reply, retries once with the violations, and falls back to the template if the retry also fails. That way no unchecked LLM reply ever reaches a student.
