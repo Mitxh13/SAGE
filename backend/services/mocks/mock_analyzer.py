@@ -62,7 +62,7 @@ class MockUnderstandingAnalyzer(BaseUnderstandingAnalyzer):
                         evidence_quote=input_data.student_message,
                     )
                 )
-            elif any(p in msg for p in ["didn't specify", "just asked", "no format", "inconsistent", "fix it", "broken"]):
+            elif any(p in msg for p in ["didn't specify", "just ask", "just asked", "no format", "without", "inconsistent", "fix it", "broken"]):
                 classification = AnswerClassification.NEEDS_SCAFFOLDING
                 in_ = 0.2
                 verdicts.append(
