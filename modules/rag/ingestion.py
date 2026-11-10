@@ -17,7 +17,7 @@ from modules.rag.models import CourseChunk, SourceSection
 
 
 def repository_sections(root: Path = REPO_ROOT) -> list[SourceSection]:
-    """Load only the unit concept sections and positive taxonomy expectations."""
+    """Load unit concepts, expectations and explicitly labelled misconceptions."""
     context = (root / "docs" / "CONTEXT.md").read_text(encoding="utf-8-sig")
     match = re.search(r"^## 8\..*?\n(.*?)(?=^## |\Z)", context, re.M | re.S)
     if match is None:
@@ -31,7 +31,7 @@ def repository_sections(root: Path = REPO_ROOT) -> list[SourceSection]:
                 unit_id=UNIT_IDS[int(heading[1]) - 1],
                 source_path="docs/CONTEXT.md",
                 source_title="SAGE Master Project Context",
-                reference=f"§8 Course Domain Scope — {heading[2]}",
+                reference=f"§8 Course Domain Scope, Unit {heading[1]}",
                 text=block.strip(),
             ))
     for unit_id in UNIT_IDS:
@@ -39,15 +39,26 @@ def repository_sections(root: Path = REPO_ROOT) -> list[SourceSection]:
         unit = json.loads((root / relative).read_text(encoding="utf-8-sig"))
         if unit["unit_id"] != unit_id:
             raise ValueError(f"Unit ID mismatch in {relative}")
-        for topic in unit["topics"]:
-            for expectation in topic["expectations"]:
+        for topic_number, topic in enumerate(unit["topics"]):
+            for expectation_number, expectation in enumerate(topic["expectations"]):
                 sections.append(SourceSection(
                     unit_id=unit_id,
                     source_path=relative,
-                    source_title=f"{unit['title']} — course taxonomy",
-                    reference=f"Topic: {topic['title']}; expectation: {expectation['id']}",
+                    source_title=f"SAGE Unit {UNIT_IDS.index(unit_id) + 1} course taxonomy",
+                    reference=f"/topics/{topic_number}/expectations/{expectation_number}",
                     topic_id=topic["topic_id"],
                     text=f"{topic['title']}. Expected understanding: {expectation['text']}",
+                ))
+            for misconception_number, misconception in enumerate(topic["misconceptions"]):
+                sections.append(SourceSection(
+                    unit_id=unit_id,
+                    source_path=relative,
+                    source_title=f"SAGE Unit {UNIT_IDS.index(unit_id) + 1} course taxonomy",
+                    reference=f"/topics/{topic_number}/misconceptions/{misconception_number}",
+                    topic_id=topic["topic_id"],
+                    text=(f"{topic['title']}. Common misconception (incorrect belief): "
+                          f"{misconception['label']}. Description of this misconception: "
+                          f"{misconception['description']}"),
                 ))
     if {section.unit_id for section in sections} != set(UNIT_IDS):
         raise ValueError("Repository corpus must cover all three units")
