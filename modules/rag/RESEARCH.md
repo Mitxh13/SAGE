@@ -40,6 +40,8 @@ The encoder runs on CPU, is loaded once per process, and requires no hosted API
 key. Its first use downloads model weights; later runs can use the local cache.
 Chunks are kept short to respect the model's 256-wordpiece input limit.
 Scores are ranking scores in [0, 1], not probabilities of factual correctness.
+The default model revision is pinned and included in the saved index identity,
+so a later upstream model update cannot silently change its embedding space.
 
 Primary implementation references:
 - [FAISS index selection](https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index)
@@ -49,8 +51,8 @@ Primary implementation references:
 ## Task checklist
 
 - [x] Review repository ownership, contracts, research and stack choices.
-- [ ] Ingest Markdown, taxonomy JSON, PDF slides and PowerPoint slides with provenance.
-- [ ] Chunk and embed course material and persist a validated vector index.
-- [ ] Implement filtered retrieval, async service and existing adapter compatibility.
-- [ ] Provide standalone indexing/query commands and backend integration checks.
-- [ ] Evaluate retrieval over all three units and document reproducible use.
+- [x] Ingest Markdown, taxonomy JSON, PDF slides and PowerPoint slides with provenance.
+- [x] Chunk and embed course material and persist a validated vector index.
+- [x] Implement filtered retrieval, async service and existing adapter compatibility.
+- [x] Provide standalone indexing/query commands and backend integration checks.
+- [x] Evaluate retrieval over all three units and document reproducible use.
