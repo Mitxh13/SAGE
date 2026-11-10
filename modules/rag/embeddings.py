@@ -7,7 +7,7 @@ from typing import Protocol
 
 import numpy as np
 
-from modules.rag.config import RagSettings
+from modules.rag.config import DEFAULT_MODEL, DEFAULT_MODEL_REVISION, RagSettings
 
 
 class Embedder(Protocol):
@@ -35,11 +35,15 @@ class SentenceTransformerEmbedder:
     def __init__(self, settings: RagSettings) -> None:
         from sentence_transformers import SentenceTransformer
 
-        self.model_name = settings.model_name
+        revision = settings.model_revision or (
+            DEFAULT_MODEL_REVISION if settings.model_name == DEFAULT_MODEL else None
+        )
+        self.model_name = settings.model_name + (f"@{revision}" if revision else "")
         settings.model_cache.mkdir(parents=True, exist_ok=True)
         self.model = SentenceTransformer(
             settings.model_name, device="cpu", cache_folder=str(settings.model_cache),
             local_files_only=settings.local_files_only, trust_remote_code=False,
+            revision=revision,
         )
 
     def encode(self, texts: list[str]) -> np.ndarray:
