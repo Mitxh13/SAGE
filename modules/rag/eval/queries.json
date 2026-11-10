@@ -16,7 +16,7 @@
   {"id":"u2_zero_shot","unit_id":"unit_2_few_shot_cot","query":"Zero shot prompting fails on edge cases. Can balanced demonstrations help?","expected_topics":["topic_in_context_exemplars"]},
   {"id":"u2_intermediate","unit_id":"unit_2_few_shot_cot","query":"Why does generating intermediate reasoning before an answer help multi step problems?","expected_topics":["topic_chain_of_thought"]},
   {"id":"u2_order","unit_id":"unit_2_few_shot_cot","query":"In chain of thought, should the rationale come before or after the final answer?","expected_topics":["topic_chain_of_thought"]},
-  {"id":"u2_missing_facts","unit_id":"unit_2_few_shot_cot","query":"Can chain of thought reasoning supply a fact the model never learned?","expected_topics":["topic_chain_of_thought"]},
+  {"id":"u2_missing_facts","unit_id":"unit_2_few_shot_cot","query":"Can chain of thought reasoning supply a fact the model never learned?","expected_topics":["topic_chain_of_thought"],"required_evidence_terms":["missing facts","factual knowledge"]},
   {"id":"u2_reasoning","unit_id":"unit_2_few_shot_cot","query":"How does think step by step change reasoning token generation?","expected_topics":["topic_chain_of_thought"]},
   {"id":"u2_committed","unit_id":"unit_2_few_shot_cot","query":"Why is committing to an answer before the reasoning trace a problem?","expected_topics":["topic_chain_of_thought"]},
   {"id":"u3_temperature","unit_id":"unit_3_decoding_rag","query":"Why does temperature zero still allow a hallucinated fact?","expected_topics":["topic_decoding_parameters"]},

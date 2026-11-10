@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 import re
 import threading
 from functools import lru_cache
@@ -18,7 +19,10 @@ _STOPWORDS = set("a an the is are was were do does why how what when which i my 
 
 
 def _terms(text: str) -> set[str]:
-    return set(re.findall(r"[a-z0-9]+", text.lower())) - _STOPWORDS
+    words = set(re.findall(r"[a-z0-9]+", text.lower())) - _STOPWORDS
+    # Fold simple plurals so "facts" and "fact" supply the same lexical cue.
+    return {word[:-1] if len(word) > 4 and word.endswith("s") and not word.endswith("ss")
+            else word for word in words}
 
 
 class CourseRetriever(BaseCourseRetriever):
@@ -74,13 +78,20 @@ class CourseRetriever(BaseCourseRetriever):
             # so lexical evidence cannot be lost by taking a small dense shortlist.
             scores, rows = index.search(vector, len(chunks))
             query_terms = _terms(query)
+            document_terms = [_terms(chunk.excerpt) for chunk in chunks]
+            # Rare course terms should outweigh generic words shared by a whole
+            # topic (e.g. "reasoning"). Normalize matched IDF weight to [0, 1].
+            weights = {term: math.log(1 + len(chunks) / (1 + sum(
+                term in terms for terms in document_terms
+            ))) for term in query_terms}
+            total_weight = sum(weights.values()) or 1.0
             ranked: list[tuple[float, str, RetrievedChunk]] = []
             for cosine, row in zip(scores[0], rows[0]):
                 # A weak/negative semantic match does not earn an unrelated citation.
                 if row < 0 or float(cosine) < 0.20:
                     continue
                 chunk = chunks[int(row)]
-                lexical = len(query_terms & _terms(chunk.excerpt)) / max(1, len(query_terms))
+                lexical = sum(weights[term] for term in query_terms & document_terms[int(row)]) / total_weight
                 score = min(1.0, max(0.0, 0.7 * float(cosine) + 0.3 * lexical))
                 result = RetrievedChunk(
                     chunk_id=chunk.chunk_id, unit_id=chunk.unit_id,

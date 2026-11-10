@@ -26,12 +26,17 @@ def evaluate(retriever: CourseRetriever, cases: list[dict]) -> dict:
         metadata = {c.chunk_id: c for chunks in retriever._snapshot.chunks.values() for c in chunks}
         expected = set(case["expected_topics"])
         relevant = sum(metadata[c.chunk_id].topic_id in expected for c in output.chunks)
+        evidence_terms = case.get("required_evidence_terms", [])
+        evidence_present = not evidence_terms or any(
+            term in chunk.excerpt.lower() for term in evidence_terms for chunk in output.chunks
+        )
         records.append({
             **case, "latency_ms": round(duration, 3),
             "topic_hit": bool(relevant) if expected else not output.chunks,
             "labelled_relevant": relevant, "retrieved": len(output.chunks),
             "unit_isolated": all(c.unit_id == case["unit_id"] for c in output.chunks),
             "sources_present": all(c.source_title and c.slide_or_section for c in output.chunks),
+            "required_evidence_present": evidence_present,
             "output": output.model_dump(),
         })
     positives = [r for r in records if r["expected_topics"]]
@@ -56,6 +61,7 @@ def evaluate(retriever: CourseRetriever, cases: list[dict]) -> dict:
     }
     passed = (hit_rate >= .8 and all(v["topic_hit_rate_at_2"] >= .8 for v in per_unit.values())
               and all(r["unit_isolated"] and r["sources_present"] for r in records)
+              and all(r["required_evidence_present"] for r in records)
               and all(r["topic_hit"] for r in negatives))
     return {"passed": passed, "summary": summary, "records": records}
 
