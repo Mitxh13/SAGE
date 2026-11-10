@@ -1,0 +1,14 @@
+# Course Retriever (modules/rag) Dependencies
+# ==========================================
+# Install from the repo root: pip install -r modules/rag/requirements.txt
+
+-r ../../backend/requirements.txt
+
+# Local CPU vector retrieval and embeddings (no API key)
+faiss-cpu>=1.9.0,<2.0
+numpy>=1.26.0,<3.0
+sentence-transformers>=3.3.0,<6.0
+
+# Course slides and notes, in addition to built-in Markdown/JSON support
+pypdf>=5.0.0,<7.0
+python-pptx>=1.0.0,<2.0
