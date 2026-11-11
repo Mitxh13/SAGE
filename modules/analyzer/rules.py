@@ -25,9 +25,12 @@ GIVE_ME_ANSWER_CUES = [
     r"\bwhat('?s| is) the (right |correct )?answer\b",
     r"\b(fix|write|do|solve) (it|this) for me\b",
     r"\btell me what to (write|do|put)\b",
+    r"\bwhat should i (write|type|put)\b",
     r"\bcan you (just )?(fix|write|solve|rewrite|correct) (it|this|my)\b",
     r"\bskip the (questions|hints)\b",
     r"\bjust the answer\b",
+    r"\bplease just (fix|give)\b",
+    r"\bi want the direct answer\b",
 ]
 
 DEBUG_REQUEST_CUES = [
@@ -38,6 +41,9 @@ DEBUG_REQUEST_CUES = [
     r"\bkeeps? (giving|returning|producing|outputting|ignoring|adding)\b",
     r"\binconsistent\b",
     r"\bwrong (output|format|answer|result)s?\b",
+    r"\bwhy is it (failing|breaking)\b",
+    r"\bfails? to parse\b",
+]
     r"\b(fails?|failing)\b",
     r"\bmy (prompt|output|code|response)\b.{0,40}\b(wrong|weird|different|messy|random|ignore\w*)\b",
 ]
