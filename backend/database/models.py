@@ -15,7 +15,7 @@ Reference:
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import (
@@ -32,6 +32,11 @@ from sqlalchemy.orm import relationship
 from backend.database.db import Base
 
 
+def utc_now() -> datetime:
+    """Return naive UTC datetime, replacing deprecated datetime.utcnow()."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+
 class SessionModel(Base):
     """A tutoring session initiated on a specific course unit."""
 
@@ -40,11 +45,11 @@ class SessionModel(Base):
     id = Column(String(64), primary_key=True, index=True)
     unit_id = Column(String(128), nullable=False, index=True)
     title = Column(String(256), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=utc_now,
+        onupdate=utc_now,
         nullable=False,
     )
 
@@ -86,7 +91,7 @@ class MessageModel(Base):
     content = Column(Text, nullable=False)
     scaffolding_move = Column(String(32), nullable=True)  # QUESTION, HINT, etc.
     citations_json = Column(Text, nullable=True, default="[]")
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
     session = relationship("SessionModel", back_populates="messages")
@@ -131,8 +136,8 @@ class LearnerStateModel(Base):
     active_misconceptions_json = Column(Text, default="{}", nullable=False)
     updated_at = Column(
         DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
+        default=utc_now,
+        onupdate=utc_now,
         nullable=False,
     )
 
@@ -176,7 +181,7 @@ class TurnTraceModel(Base):
     retriever_output_json = Column(Text, nullable=True)
     tutor_output_json = Column(Text, nullable=True)
     latency_ms = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=utc_now, nullable=False)
 
     # Relationships
     session = relationship("SessionModel", back_populates="traces")
