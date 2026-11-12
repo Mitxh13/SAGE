@@ -123,12 +123,16 @@ async def run_suite(
     with tempfile.TemporaryDirectory() as tmp:
         session_factory = _temp_session_factory(Path(tmp) / "eval.db")
         records = []
-        for conversation in conversations:
-            records.append(
-                await _run_conversation(
-                    conversation, session_factory, recorder, analyzer, retriever, judge_llm, delay_s
+        try:
+            for conversation in conversations:
+                records.append(
+                    await _run_conversation(
+                        conversation, session_factory, recorder, analyzer, retriever, judge_llm, delay_s
+                    )
                 )
-            )
+        finally:
+            if "bind" in session_factory.kw and session_factory.kw["bind"] is not None:
+                session_factory.kw["bind"].dispose()
     return records
 
 
