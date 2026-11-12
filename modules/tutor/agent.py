@@ -37,7 +37,7 @@ from modules.tutor.validator import validate_reply
 logger = logging.getLogger(__name__)
 
 MAX_LLM_ATTEMPTS = 2   # first try + one corrective retry
-LLM_BUDGET_S = 6.0     # hard cap on the LLM path; the whole turn targets < 10 s
+LLM_BUDGET_S = 16.0    # allow comfortable budget for live LLM generation + validation retry
 
 
 class Outcome(str, Enum):

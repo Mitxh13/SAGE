@@ -92,6 +92,12 @@ def _question(intent: HelpRequestType, topic: str) -> str:
     return _QUESTION_BY_INTENT[intent].format(topic=topic)
 
 
+def _format_source(chunk: RetrievedChunk) -> str:
+    if not chunk.slide_or_section or chunk.slide_or_section.startswith("/"):
+        return chunk.source_title
+    return f"{chunk.source_title} ({chunk.slide_or_section})"
+
+
 def _hint(
     intent: HelpRequestType, topic: str, chunk: RetrievedChunk | None
 ) -> tuple[str, list[str]]:
@@ -107,7 +113,7 @@ def _hint(
             [],
         )
     return (
-        f"{opener}re-read {chunk.source_title} ({chunk.slide_or_section}) and compare it "
+        f"{opener}re-read {_format_source(chunk)} and compare it "
         f"with your approach to {topic}. What does the material do that your attempt doesn't?",
         [chunk.chunk_id],
     )
@@ -124,7 +130,7 @@ def _explanation(
     excerpt = _trim_excerpt(chunk.excerpt) if chunk else ""
     if chunk and "?" not in excerpt:
         return (
-            f"Let's go through it directly. {chunk.source_title} ({chunk.slide_or_section}) "
+            f"Let's go through it directly. {_format_source(chunk)} "
             f"puts it this way: \"{excerpt}\"{trap} {_APPLY_CHECK}",
             [chunk.chunk_id],
         )

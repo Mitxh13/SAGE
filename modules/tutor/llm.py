@@ -28,7 +28,7 @@ from pydantic import BaseModel
 
 from backend.config import Settings, get_settings
 
-DEFAULT_TIMEOUT_S = 8.0       # per attempt; the whole turn budget is < 10 s
+DEFAULT_TIMEOUT_S = 15.0       # per attempt; comfortable window for live GenAI calls
 DEFAULT_TEMPERATURE = 0.4
 SUPPORTED_PROVIDERS = ("gemini",)
 
