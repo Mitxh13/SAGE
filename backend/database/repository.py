@@ -22,6 +22,7 @@ from backend.database.models import (
     MessageModel,
     SessionModel,
     TurnTraceModel,
+    utc_now,
 )
 from backend.schemas.api_schemas import (
     CitationItem,
@@ -54,8 +55,8 @@ class SageRepository:
             id=sid,
             unit_id=unit_id,
             title=title or f"Session on {unit_id}",
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=utc_now(),
+            updated_at=utc_now(),
         )
         self.db.add(session)
         self.db.commit()
@@ -123,7 +124,7 @@ class SageRepository:
             content=content,
             scaffolding_move=move_str,
             citations_json=json.dumps(raw_citations),
-            created_at=datetime.utcnow(),
+            created_at=utc_now(),
         )
         self.db.add(msg)
         self.db.commit()
@@ -197,7 +198,7 @@ class SageRepository:
                 accumulated_wrong_score=accumulated_wrong_score,
                 topic_status=status_str,
                 active_misconceptions_json=json.dumps(active_misconceptions or {}),
-                updated_at=datetime.utcnow(),
+                updated_at=utc_now(),
             )
             self.db.add(state)
         else:
@@ -211,7 +212,7 @@ class SageRepository:
             state.topic_status = status_str
             if active_misconceptions is not None:
                 state.active_misconceptions_json = json.dumps(active_misconceptions)
-            state.updated_at = datetime.utcnow()
+            state.updated_at = utc_now()
 
         self.db.commit()
         self.db.refresh(state)
@@ -266,7 +267,7 @@ class SageRepository:
                 json.dumps(tutor_output) if tutor_output else "{}"
             ),
             latency_ms=latency_ms,
-            created_at=datetime.utcnow(),
+            created_at=utc_now(),
         )
         self.db.add(trace)
         self.db.commit()
