@@ -12,6 +12,7 @@ from backend.schemas.contracts import (
     AnalyzerInput,
     HelpRequestType,
     LearnerStateSnapshot,
+    MisconceptionVerdict,
 )
 from backend.services.mocks.mock_analyzer import MockUnderstandingAnalyzer
 
@@ -34,7 +35,7 @@ async def test_analyzer_contract_adherence() -> None:
     assert isinstance(result.misconception_verdicts, list)
     for verdict in result.misconception_verdicts:
         assert verdict.misconception_id != ""
-        assert 0.0 <= verdict.confidence <= 1.0
+        assert verdict.verdict in MisconceptionVerdict
 
 
 @pytest.mark.asyncio

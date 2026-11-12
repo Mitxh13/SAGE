@@ -32,12 +32,16 @@ class MockUnderstandingAnalyzer(BaseUnderstandingAnalyzer):
         unit_id = input_data.unit_id
 
         # ── 1. Help Request Intent ───────────────────────────────────
-        if any(p in msg for p in ["just fix it", "give me the answer", "fix it for me", "tell me what to write"]):
+        if any(p in msg for p in [
+            "just fix it", "give me the answer", "fix it for me", "tell me what to write",
+            "write the prompt", "write it for me", "write a prompt for me", "give me a prompt",
+            "write for me", "can you just write", "can you write the prompt",
+        ]):
             intent = HelpRequestType.GIVE_ME_ANSWER
-        elif any(p in msg for p in ["doesn't work", "fails", "inconsistent", "keeps giving", "debugging"]):
-            intent = HelpRequestType.DEBUG_REQUEST
         elif any(p in msg for p in ["what is", "why does", "how does", "explain", "difference between"]):
             intent = HelpRequestType.CONCEPT_QUESTION
+        elif any(p in msg for p in ["doesn't work", "fails", "inconsistent", "keeps giving", "debugging"]):
+            intent = HelpRequestType.DEBUG_REQUEST
         else:
             intent = HelpRequestType.ANSWER_ATTEMPT
 
@@ -51,7 +55,52 @@ class MockUnderstandingAnalyzer(BaseUnderstandingAnalyzer):
             detected_topic = "topic_output_formatting"
             retrieval_query = "prompt structure specifying output format consistency constraints"
 
-            if any(p in msg for p in ["json", "format schema", "bullet points", "xml tags", "delimiters"]):
+            has_struggle = any(p in msg for p in [
+                "still includes", "conversational text", "text around", "preamble",
+                "unpredictable", "inconsistent", "fluctuates", "fix it", "broken"
+            ])
+
+            has_complete_solution = any(p in msg for p in [
+                "few-shot", "valid json only", "no preamble", "markdown fences", "schema constraints",
+                "prevent raw preamble", "strictly in valid json", "delimiters"
+            ])
+
+            if intent == HelpRequestType.GIVE_ME_ANSWER:
+                classification = AnswerClassification.NEEDS_SCAFFOLDING
+                in_ = 0.0
+                verdicts.append(
+                    MisconceptionVerdictItem(
+                        misconception_id="misc_implicit_format_expectation",
+                        misconception_label="Assuming LLM infers desired format without explicit schema",
+                        verdict=MisconceptionVerdict.INTRODUCED,
+                        evidence_quote=input_data.student_message,
+                    )
+                )
+            elif has_complete_solution:
+                classification = AnswerClassification.CORRECT
+                rn = 0.55
+                verdicts.append(
+                    MisconceptionVerdictItem(
+                        misconception_id="misc_implicit_format_expectation",
+                        misconception_label="Assuming LLM infers desired format without explicit schema",
+                        verdict=MisconceptionVerdict.WEAKENED,
+                        evidence_quote=input_data.student_message,
+                    )
+                )
+            elif has_struggle:
+                classification = AnswerClassification.NEEDS_SCAFFOLDING
+                in_ = 0.15
+                # If they already recognized JSON/format, weaken the implicit format misconception
+                v = MisconceptionVerdict.WEAKENED if "json" in msg or "format" in msg else MisconceptionVerdict.INTRODUCED
+                verdicts.append(
+                    MisconceptionVerdictItem(
+                        misconception_id="misc_implicit_format_expectation",
+                        misconception_label="Assuming LLM infers desired format without explicit schema",
+                        verdict=v,
+                        evidence_quote=input_data.student_message,
+                    )
+                )
+            elif any(p in msg for p in ["json", "format schema", "bullet points", "xml tags", "delimiters"]):
                 classification = AnswerClassification.CORRECT
                 rn = 0.4
                 verdicts.append(
@@ -62,7 +111,7 @@ class MockUnderstandingAnalyzer(BaseUnderstandingAnalyzer):
                         evidence_quote=input_data.student_message,
                     )
                 )
-            elif any(p in msg for p in ["didn't specify", "just ask", "just asked", "no format", "without", "inconsistent", "fix it", "broken"]):
+            elif any(p in msg for p in ["didn't specify", "just ask", "just asked", "no format", "without"]):
                 classification = AnswerClassification.NEEDS_SCAFFOLDING
                 in_ = 0.2
                 verdicts.append(

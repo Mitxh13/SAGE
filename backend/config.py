@@ -9,15 +9,19 @@ Per-module flags (USE_MOCK_ANALYZER, etc.) override the global flag.
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ROOT_DIR = Path(__file__).resolve().parent.parent
+_ENV_FILE = _ROOT_DIR / ".env"
 
 
 class Settings(BaseSettings):
     """Central configuration read from environment / .env file."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(_ENV_FILE, ".env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )

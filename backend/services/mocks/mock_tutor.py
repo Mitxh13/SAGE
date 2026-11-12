@@ -37,19 +37,32 @@ class MockSocraticTutor(BaseSocraticTutor):
 
         # ── 1. Scaffolding Stage: QUESTION ───────────────────────────
         if stage == ScaffoldingMove.QUESTION:
-            if intent == HelpRequestType.GIVE_ME_ANSWER:
+            msg_lower = student_msg.lower()
+            if intent == HelpRequestType.GIVE_ME_ANSWER or any(p in msg_lower for p in ["write the prompt", "write for me", "fix it for me"]):
                 reply = (
                     "I understand you want a quick fix, but seeing *why* the output fluctuates is the real key here. "
                     "Let's look at it together first — does your prompt explicitly tell the model what format "
                     "or structure you expect the answer to take?"
                 )
                 reasoning = "Refused 'give_me_answer' shortcut; redirected with diagnostic format question."
-            elif any(w in student_msg.lower() for w in ["didn't specify", "no format", "just asked"]):
+            elif any(w in msg_lower for w in ["didn't specify", "no format", "just asked", "unpredictable", "inconsistent"]):
                 reply = (
                     "That's a very helpful observation. If you don't specify a format instruction, "
                     "what does the language model fall back on when generating tokens?"
                 )
                 reasoning = "Targeted follow-up probing the model's unconstrained output distribution."
+            elif any(w in msg_lower for w in ["few-shot", "schema", "no preamble", "valid json only"]):
+                reply = (
+                    "Spot on! Pairing a schema specification with explicit negative constraints ('Output valid JSON only with no preamble') "
+                    "strongly anchors next-token generation. How do boundary delimiters (such as markdown code fences) further prevent format leaks?"
+                )
+                reasoning = "Affirmed student schema synthesis; probed boundary delimiter encapsulation."
+            elif any(w in msg_lower for w in ["json", "conversational", "preamble", "around it"]):
+                reply = (
+                    "Great observation about specifying JSON! When the model still includes surrounding commentary, "
+                    "how can you explicitly instruct the model to exclude conversational preamble and stick solely to the structured payload?"
+                )
+                reasoning = "Scaffolding probe on negative constraints and preamble suppression."
             else:
                 reply = (
                     "Let's examine how the model parses this prompt. When you provide instructions without structural "
@@ -71,12 +84,22 @@ class MockSocraticTutor(BaseSocraticTutor):
 
         # ── 2. Scaffolding Stage: HINT ───────────────────────────────
         elif stage == ScaffoldingMove.HINT:
-            reply = (
-                f"Here is a clue grounded in {chunk_source}: when prompts omit target schemas, the model samples from "
-                "various formatting patterns learned during pretraining. What specific format constraint (for example, "
-                "JSON or markdown) could you instruct the model to follow to eliminate formatting variance?"
-            )
-            reasoning = f"Escalated to Stage 2 HINT citing {chunk_source} without giving full solution code."
+            msg_lower = student_msg.lower()
+            if any(w in msg_lower for w in ["conversational", "preamble", "json", "around it"]):
+                reply = (
+                    f"Here is a key technique grounded in {chunk_source}: To eliminate conversational preamble around JSON, "
+                    "wrap your target schema in explicit markdown code fences (like ```json) and instruct: "
+                    "'Return valid JSON only. Do not include any explanations, greetings, or preamble.' "
+                    "How would you integrate this negative constraint into your current prompt?"
+                )
+                reasoning = f"Escalated to Stage 2 HINT citing {chunk_source} focusing on delimiter and preamble suppression."
+            else:
+                reply = (
+                    f"Here is a clue grounded in {chunk_source}: when prompts omit target schemas, the model samples from "
+                    "various formatting patterns learned during pretraining. What specific format constraint (for example, "
+                    "JSON or markdown) could you instruct the model to follow to eliminate formatting variance?"
+                )
+                reasoning = f"Escalated to Stage 2 HINT citing {chunk_source} without giving full solution code."
 
             return TutorAgentOutput(
                 scaffolding_move=ScaffoldingMove.HINT,
@@ -94,8 +117,9 @@ class MockSocraticTutor(BaseSocraticTutor):
         elif stage == ScaffoldingMove.EXPLANATION:
             reply = (
                 f"Let's step back and look at the core concept taught in {chunk_source}: Language models are probabilistic "
-                "next-token predictors. Without an explicit schema, the probability distribution over possible response "
-                "styles remains wide. By specifying 'Respond strictly in valid JSON matching this schema: {...}', you "
+                "next-token predictors. Without an explicit schema and strict negative constraints, the probability distribution "
+                "over possible response styles remains wide, often including polite conversational preamble.\n\n"
+                "By specifying 'Respond strictly in valid JSON matching this schema: {...} with NO preamble', you "
                 "constrain the output distribution to deterministic structures.\n\n"
                 "Now, based on this principle, how would you rewrite your prompt to lock in the output format?"
             )
@@ -116,8 +140,9 @@ class MockSocraticTutor(BaseSocraticTutor):
         # ── 4. Scaffolding Stage: WRAP_UP ────────────────────────────
         else:
             reply = (
-                "Spot on! You've correctly identified that explicit format constraints and boundary delimiters "
-                "guide the model's token distribution. You've mastered this topic! Let's move on to the next topic."
+                "Spot on! You've correctly identified that explicit format constraints, markdown code fences, and boundary delimiters "
+                "guide the model's token distribution and suppress unwanted conversational noise. You've mastered this topic! "
+                "Let's move on to Topic 2: Negative Constraints."
             )
             reasoning = "Mastery criteria satisfied (LCC > 0.8 and misconceptions resolved); issuing positive wrap-up."
 
