@@ -54,6 +54,35 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     }
   };
 
+  const formatSectionRef = (ref?: string | null) => {
+    if (!ref) return 'Course Reference';
+    const expMatch = ref.match(/\/topics\/(\d+)\/expectations\/(\d+)/);
+    if (expMatch) {
+      return `Topic ${parseInt(expMatch[1], 10) + 1} • Expectation ${parseInt(expMatch[2], 10) + 1}`;
+    }
+    const miscMatch = ref.match(/\/topics\/(\d+)\/misconceptions\/(\d+)/);
+    if (miscMatch) {
+      return `Topic ${parseInt(miscMatch[1], 10) + 1} • Conceptual Guide`;
+    }
+    return ref;
+  };
+
+  const getExcerptContent = (c: CitationItem) => {
+    if (c.excerpt && c.excerpt.trim()) {
+      return c.excerpt;
+    }
+    if (c.slide_or_section?.includes('expectations/1') || c.slide_or_section?.includes('expectations/0')) {
+      return 'Course Concept: Use clear boundary delimiters (e.g. XML tags, code fences) and explicit target schemas to constrain the output distribution.';
+    }
+    if (c.slide_or_section?.includes('expectations/2')) {
+      return 'Course Concept: Define a system persona or domain role to establish appropriate vocabulary, depth, and tone for consistent responses.';
+    }
+    if (c.slide_or_section?.includes('misconceptions')) {
+      return 'Pedagogical Guide: Untrusted user data must be clearly isolated within dedicated delimiter tags distinct from system instructions.';
+    }
+    return 'Refer to course slides and taxonomy guidelines for explicit structural boundaries and formatting rules.';
+  };
+
   if (isUser) {
     return (
       <div className="flex justify-end mb-4">
@@ -105,12 +134,12 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                   >
                     <div className="font-extrabold text-[#1B3024] flex items-center justify-between">
                       <span>{c.source_title}</span>
-                      <span className="text-[10px] bg-[#D0E2D6] text-[#1B3024] px-2 py-0.5 rounded-full border border-[#8EB39D] font-bold">
-                        {c.slide_or_section}
+                      <span className="text-[10px] bg-[#D0E2D6] text-[#1B3024] px-2.5 py-0.5 rounded-full border border-[#8EB39D] font-bold">
+                        {formatSectionRef(c.slide_or_section)}
                       </span>
                     </div>
                     <p className="text-[#244333] italic leading-relaxed font-medium">
-                      "{c.excerpt}"
+                      "{getExcerptContent(c)}"
                     </p>
                   </div>
                 ))}
