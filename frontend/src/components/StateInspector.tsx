@@ -63,8 +63,6 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
     }
   }, [safeTraces.length]);
 
-  if (!isOpen) return null;
-
   const latestTrace = safeTraces.length > 0 ? safeTraces[safeTraces.length - 1] : null;
   const currentTrace = safeTraces[selectedTraceIndex] || latestTrace;
 
@@ -92,7 +90,7 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
       .join(' ');
   };
 
-  // Collect all completed/mastered topics from execution traces
+  // Collect all completed/mastered topics from execution traces (must run before any early return)
   const masteredTopics = React.useMemo(() => {
     const list: Array<{ topicId: string; title: string; recap?: string }> = [];
     const seen = new Set<string>();
@@ -126,6 +124,9 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
     : (learnerState?.scaffolding_stage || 'QUESTION');
   const currentStageIndex = stages.findIndex((s) => s.key === effectiveStage);
   const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
+
+  // Safe early return after all React hooks (useState, useEffect, useMemo) have run
+  if (!isOpen) return null;
 
   return (
     <aside className="w-96 bg-[#EFE9DE] border-l border-[#DDD5C7] flex flex-col h-full z-30 select-none shadow-xl transition-all font-sans">
