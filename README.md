@@ -103,7 +103,7 @@ python -m pytest backend/tests/test_state_math.py -v
 
 | Team Member | Module Ownership | Deliverables |
 | :--- | :--- | :--- |
-| **Kurumeti Mitesh (`PES2UG24AM080`)** | **Chat App + Orchestration (`sage-core`)** | React Chat UI with X-Ray Inspector, FastAPI API, SQLite storage (`sage.db`), 6-Step Orchestrator, Mock AI layer. ([mitesh_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/docs/member_explnation/mitesh_explanation.docx)) |
+| **Kurumeti Mitesh (`PES2UG24AM080`)** | **Chat App + Orchestration (`sage-core`)** | React Chat UI with X-Ray Telemetry (Active vs. Mastered Topic tracking & Synthesis), FastAPI API, SQLite storage (`sage.db`), 6-Step Orchestrator, Mock AI layer. ([mitesh_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/docs/member_explnation/mitesh_explanation.docx)) |
 | **Paturu Naga Jignas (`PES2UG24AM110`)** | **RAG & Knowledge Retrieval (`sage-rag`)** | Standalone course slide ingestion, embeddings, and vector retrieval (`CourseRetrievalService`). ([jignas_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/docs/member_explnation/jignas_explanation.docx)) |
 | **Nidhi M (`PES2UG24AM103`)** | **Student Understanding Analyzer (`sage-analyzer`)** | Standalone intent, misconception, and LCC classifier (`UnderstandingAnalyzerService`). ([nidhi_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/docs/member_explnation/nidhi_explanation.docx)) |
 | **Mohammed Tahir Siddique (`PES2UG24AM092`)** | **Socratic Tutor Agent (`sage-tutor`)** | Standalone pedagogical response generator for chosen stage (`SocraticTutorService`). ([tahir_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/docs/member_explnation/tahir_explanation.docx)) |
