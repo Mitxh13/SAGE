@@ -12,6 +12,7 @@ Reference:
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -189,18 +190,51 @@ class TutoringOrchestrator:
         tutor_output = await self.tutor.respond(tutor_input)
 
         # Build citations from the chunks the tutor actually cited.
-        # Course excerpts are provided so students can inspect the referenced curriculum.
+        # Format human-readable unit titles, topic references, and authoritative curriculum excerpts.
         cited_ids = set(tutor_output.cited_chunk_ids)
-        citations: list[CitationItem] = [
-            CitationItem(
-                chunk_id=c.chunk_id,
-                source_title=c.source_title,
-                slide_or_section=c.slide_or_section,
-                excerpt=c.excerpt,
-            )
-            for c in retriever_output.chunks
-            if c.chunk_id in cited_ids
-        ]
+        taxonomy = load_unit_taxonomy(session.unit_id)
+        unit_display_title = taxonomy.title if taxonomy else session.unit_id
+
+        def _clean_citation(chunk) -> tuple[str, str, str]:
+            src = unit_display_title
+            ref = chunk.slide_or_section or "Core Concept"
+            exc = chunk.excerpt or ""
+
+            # Map /topics/<topic_num>/expectations/<exp_num> to official topic and concept
+            exp_match = re.search(r"/topics/(\d+)/expectations/(\d+)", ref)
+            if exp_match and taxonomy and len(taxonomy.topics) > int(exp_match.group(1)):
+                t_idx = int(exp_match.group(1))
+                e_idx = int(exp_match.group(2))
+                topic = taxonomy.topics[t_idx]
+                ref = f"Topic {t_idx + 1}: {topic.title}"
+                if e_idx < len(topic.expectations):
+                    exc = topic.expectations[e_idx].text
+                return src, ref, exc
+
+            # Map /topics/<topic_num>/misconceptions/<misc_num> to official misconception
+            misc_match = re.search(r"/topics/(\d+)/misconceptions/(\d+)", ref)
+            if misc_match and taxonomy and len(taxonomy.topics) > int(misc_match.group(1)):
+                t_idx = int(misc_match.group(1))
+                m_idx = int(misc_match.group(2))
+                topic = taxonomy.topics[t_idx]
+                ref = f"Topic {t_idx + 1}: {topic.title}"
+                if m_idx < len(topic.misconceptions):
+                    m = topic.misconceptions[m_idx]
+                    exc = f"Target Understanding: Avoid common misconception — '{m.label}'. {m.description}"
+                return src, ref, exc
+
+            return src, ref, exc
+
+        citations: list[CitationItem] = []
+        for c in retriever_output.chunks:
+            if c.chunk_id in cited_ids:
+                clean_src, clean_ref, clean_exc = _clean_citation(c)
+                citations.append(CitationItem(
+                    chunk_id=c.chunk_id,
+                    source_title=clean_src,
+                    slide_or_section=clean_ref,
+                    excerpt=clean_exc,
+                ))
 
         # ── Step 6: Delivery & State Persistence (Mitesh) ────────────────
         # Persist assistant reply message
