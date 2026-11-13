@@ -91,10 +91,12 @@ def read_source(path: Path, unit_id: str, title: str | None = None) -> list[Sour
         if lines:
             parts.append((heading, "\n".join(lines)))
     elif suffix == ".pdf":
+        # Requires pypdf (dynamic import avoids hard startup dependency when reading Markdown)
         from pypdf import PdfReader
         parts = [(f"Page {i}", page.extract_text() or "")
                  for i, page in enumerate(PdfReader(path).pages, 1)]
     elif suffix == ".pptx":
+        # Requires python-pptx (dynamic import avoids hard startup dependency when reading Markdown)
         from pptx import Presentation
         for i, slide in enumerate(Presentation(path).slides, 1):
             text_parts = []
