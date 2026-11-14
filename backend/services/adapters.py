@@ -40,6 +40,7 @@ def get_analyzer(settings: Settings | None = None) -> BaseUnderstandingAnalyzer:
     # Attempt direct Python import of Nidhi's module
     try:
         from modules.analyzer import analyze  # type: ignore
+        logger.info("Successfully resolved live analyzer module 'modules.analyzer'.")
 
         class LiveAnalyzerAdapter(BaseUnderstandingAnalyzer):
             async def analyze(self, input_data):
@@ -70,6 +71,7 @@ def get_retriever(settings: Settings | None = None) -> BaseCourseRetriever:
     # Attempt direct Python import of Jignas's module
     try:
         from modules.rag import retrieve  # type: ignore
+        logger.info("Successfully resolved live retriever module 'modules.rag'.")
 
         class LiveRetrieverAdapter(BaseCourseRetriever):
             async def retrieve(self, input_data):
@@ -99,6 +101,7 @@ def get_tutor(settings: Settings | None = None) -> BaseSocraticTutor:
     # Direct Python import of Tahir's module (SocraticTutor implements BaseSocraticTutor)
     try:
         from modules.tutor import SocraticTutor
+        logger.info("Successfully resolved live tutor module 'modules.tutor'.")
     except ImportError:
         logger.warning(
             "Live tutor module 'modules.tutor' not found. Falling back to MockSocraticTutor."
