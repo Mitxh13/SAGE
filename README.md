@@ -99,10 +99,20 @@ python -m pytest backend/tests/test_state_math.py -v
 
 | Team Member | Module Ownership | Deliverables |
 | :--- | :--- | :--- |
-| **Kurumeti Mitesh (`PES2UG24AM080`)** | **Chat App + Orchestration (`sage-core`)** | React Chat UI with X-Ray Inspector, FastAPI API, SQLite storage (`sage.db`), 6-Step Orchestrator, Mock AI layer. |
-| **Paturu Naga Jignas (`PES2UG24AM110`)** | **RAG & Knowledge Retrieval (`sage-rag`)** | Standalone course slide ingestion, embeddings, and vector retrieval (`CourseRetrievalService`). |
-| **Nidhi M (`PES2UG24AM103`)** | **Student Understanding Analyzer (`sage-analyzer`)** | Standalone intent, misconception, and LCC classifier (`UnderstandingAnalyzerService`). |
-| **Mohammed Tahir Siddique (`PES2UG24AM092`)** | **Socratic Tutor Agent (`sage-tutor`)** | Standalone pedagogical response generator for chosen stage (`SocraticTutorService`). |
+| **Kurumeti Mitesh (`PES2UG24AM080`)** | **Chat App + Orchestration (`sage-core`)** | React Chat UI with X-Ray Inspector, FastAPI API, SQLite storage (`sage.db`), 6-Step Orchestrator, Mock AI layer. ([mitesh_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/mitesh_explanation.docx)) |
+| **Paturu Naga Jignas (`PES2UG24AM110`)** | **RAG & Knowledge Retrieval (`sage-rag`)** | Standalone course slide ingestion, embeddings, and vector retrieval (`CourseRetrievalService`). ([jignas_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/jignas_explanation.docx)) |
+| **Nidhi M (`PES2UG24AM103`)** | **Student Understanding Analyzer (`sage-analyzer`)** | Standalone intent, misconception, and LCC classifier (`UnderstandingAnalyzerService`). ([nidhi_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/nidhi_explanation.docx)) |
+| **Mohammed Tahir Siddique (`PES2UG24AM092`)** | **Socratic Tutor Agent (`sage-tutor`)** | Standalone pedagogical response generator for chosen stage (`SocraticTutorService`). ([tahir_explanation.docx](file:///C:/mitesh_dev/Projects/SAGE/tahir_explanation.docx)) |
+
+---
+
+## 📚 Technical Documentation & Reports
+
+Comprehensive Word documentation files are provided for each team member:
+- [**mitesh_explanation.docx**](file:///C:/mitesh_dev/Projects/SAGE/mitesh_explanation.docx): Full-Stack architecture, 6-step orchestrator, pedagogical math, and database models.
+- [**jignas_explanation.docx**](file:///C:/mitesh_dev/Projects/SAGE/jignas_explanation.docx): Course ingestion, FAISS indexing, and hybrid lexical-semantic retrieval.
+- [**nidhi_explanation.docx**](file:///C:/mitesh_dev/Projects/SAGE/nidhi_explanation.docx): Rule-based understanding analyzer, intent classification, and curriculum taxonomy.
+- [**tahir_explanation.docx**](file:///C:/mitesh_dev/Projects/SAGE/tahir_explanation.docx): Socratic tutor agent, guard loops, constraint validation, and Gemini LLM integration.
 
 ---
 
