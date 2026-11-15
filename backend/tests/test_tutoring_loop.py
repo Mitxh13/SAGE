@@ -112,3 +112,7 @@ def test_full_tutoring_escalation_loop() -> None:
     # Starter message + 5 student messages + 5 assistant messages = 11 messages
     assert len(detail["messages"]) == 11
     assert len(detail["traces"]) == 5
+    # Verify valid UTC timestamps on persisted records
+    assert detail["created_at"] is not None
+    assert detail["updated_at"] is not None
+    assert all(m["created_at"] is not None for m in detail["messages"])
