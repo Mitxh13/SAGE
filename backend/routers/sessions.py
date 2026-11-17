@@ -139,3 +139,22 @@ async def get_session(
             detail=f"Session '{session_id}' not found",
         )
     return detail
+
+
+@router.delete(
+    "/{session_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a tutoring session by ID",
+)
+async def delete_session(
+    session_id: str,
+    db: Session = Depends(get_db),
+):
+    """Delete a past tutoring session and cascade delete all its messages and state."""
+    repo = SageRepository(db)
+    success = repo.delete_session(session_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found",
+        )
