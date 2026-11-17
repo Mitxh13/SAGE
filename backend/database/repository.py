@@ -82,6 +82,15 @@ class SageRepository:
             for s in sessions
         ]
 
+    def delete_session(self, session_id: str) -> bool:
+        """Delete a session by ID with cascading removal of messages and state."""
+        session = self.get_session(session_id)
+        if not session:
+            return False
+        self.db.delete(session)
+        self.db.commit()
+        return True
+
     # ── Message Operations ───────────────────────────────────────────
 
     def save_message(
