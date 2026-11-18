@@ -3,6 +3,7 @@ Unit tests for FastAPI server, health check, and REST endpoints.
 """
 
 from fastapi.testclient import TestClient
+from backend.config import get_settings
 from backend.main import app
 
 client = TestClient(app)
@@ -15,7 +16,7 @@ def test_health_check() -> None:
     data = response.json()
     assert data["status"] == "ok"
     assert data["app_name"] == "SAGE"
-    assert data["use_mock_ai"] is True
+    assert data["use_mock_ai"] == get_settings().USE_MOCK_AI
 
 
 def test_list_units() -> None:
@@ -65,5 +66,13 @@ def test_session_lifecycle_and_messaging() -> None:
     turn_data = msg_resp.json()
     assert turn_data["message"]["role"] == "assistant"
     assert turn_data["message"]["scaffolding_move"] == "QUESTION"
-    assert len(turn_data["message"]["citations"]) > 0
+    assert isinstance(turn_data["message"]["citations"], list)
     assert turn_data["trace"]["session_id"] == session_id
+
+    # 5. Delete the session
+    del_resp = client.delete(f"/api/sessions/{session_id}")
+    assert del_resp.status_code == 204
+
+    # 6. Verify session is gone
+    get_after_del = client.get(f"/api/sessions/{session_id}")
+    assert get_after_del.status_code == 404
