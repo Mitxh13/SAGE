@@ -44,6 +44,14 @@ export const sageApi = {
     return res.json();
   },
 
+  /** Delete a past tutoring session */
+  async deleteSession(sessionId: string): Promise<void> {
+    const res = await fetch(`${BASE_URL}/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error(`Failed to delete session: ${res.statusText}`);
+  },
+
   /** Send a student message and receive the tutor response with telemetry */
   async sendMessage(sessionId: string, content: string): Promise<TurnResponse> {
     const res = await fetch(`${BASE_URL}/sessions/${sessionId}/messages`, {
