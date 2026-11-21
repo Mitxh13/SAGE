@@ -11,6 +11,8 @@ import {
   BookOpen,
   CheckCircle,
   X,
+  AlertTriangle,
+  Flame,
 } from 'lucide-react';
 import { LearnerState, TurnTrace } from '../types/sage';
 
@@ -48,38 +50,44 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
   };
 
   const stages = [
-    { key: 'QUESTION', label: '1. Question', icon: HelpCircle, color: 'text-sky-400 border-sky-500/40 bg-sky-500/10' },
+    { key: 'QUESTION', label: '1. Question', icon: HelpCircle, color: 'text-blue-400 border-blue-500/40 bg-blue-500/10' },
     { key: 'HINT', label: '2. Hint', icon: Lightbulb, color: 'text-amber-400 border-amber-500/40 bg-amber-500/10' },
     { key: 'EXPLANATION', label: '3. Explanation', icon: BookOpen, color: 'text-purple-400 border-purple-500/40 bg-purple-500/10' },
     { key: 'WRAP_UP', label: '4. Wrap-up', icon: CheckCircle, color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
   ];
 
+  const currentStageIndex = stages.findIndex((s) => s.key === learnerState?.scaffolding_stage);
+  const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
+
   return (
-    <aside className="w-96 bg-slate-950 border-l border-slate-800 flex flex-col h-full z-20 select-none shadow-2xl">
-      {/* Drawer Header */}
-      <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
-        <div className="flex items-center space-x-2">
-          <Activity className="w-4 h-4 text-emerald-400" />
-          <h2 className="font-semibold text-sm text-slate-100 tracking-tight">
+    <aside className="w-96 bg-gemini-800 border-l border-gemini-700/60 flex flex-col h-full z-30 select-none shadow-2xl transition-all font-sans">
+      {/* 1. Header */}
+      <div className="p-4 border-b border-gemini-700/60 flex items-center justify-between bg-gemini-850">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-6 h-6 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Activity className="w-3.5 h-3.5" />
+          </div>
+          <h2 className="font-semibold text-sm text-gemini-100 tracking-tight">
             X-Ray State Inspector
           </h2>
         </div>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          className="p-1.5 rounded-full text-gemini-400 hover:text-gemini-100 hover:bg-gemini-700 transition-colors"
+          title="Close drawer"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-slate-800 text-xs font-medium">
+      {/* 2. Tabs */}
+      <div className="flex border-b border-gemini-700/60 text-xs font-medium bg-gemini-850/50">
         <button
           onClick={() => setActiveTab('metrics')}
-          className={`flex-1 py-2.5 text-center border-b-2 transition-all flex items-center justify-center gap-1.5 ${
+          className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
             activeTab === 'metrics'
-              ? 'border-emerald-500 text-emerald-300 bg-emerald-950/20'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-blue-500 text-blue-300 bg-gemini-800'
+              : 'border-transparent text-gemini-400 hover:text-gemini-200'
           }`}
         >
           <Gauge className="w-3.5 h-3.5" />
@@ -87,10 +95,10 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
         </button>
         <button
           onClick={() => setActiveTab('trace')}
-          className={`flex-1 py-2.5 text-center border-b-2 transition-all flex items-center justify-center gap-1.5 ${
+          className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
             activeTab === 'trace'
-              ? 'border-emerald-500 text-emerald-300 bg-emerald-950/20'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
+              ? 'border-blue-500 text-blue-300 bg-gemini-800'
+              : 'border-transparent text-gemini-400 hover:text-gemini-200'
           }`}
         >
           <Code2 className="w-3.5 h-3.5" />
@@ -98,85 +106,108 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
         </button>
       </div>
 
-      {/* Drawer Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      {/* 3. Tab Body */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {activeTab === 'metrics' ? (
           <>
             {/* Scaffolding Stage Stepper */}
-            <div>
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2.5">
-                Current Scaffolding Stage
+            <div className="p-4 rounded-2xl bg-gemini-750 border border-gemini-700/60 space-y-3 shadow-sm">
+              <span className="text-[11px] font-semibold text-gemini-400 uppercase tracking-wider block">
+                Active Scaffolding Stage
               </span>
               <div className="grid grid-cols-2 gap-2">
-                {stages.map((st) => {
-                  const isActive = learnerState?.scaffolding_stage === st.key;
-                  const Icon = st.icon;
+                {stages.map((stage, idx) => {
+                  const Icon = stage.icon;
+                  const isActive = stage.key === learnerState?.scaffolding_stage;
+                  const isPassed = currentStageIndex > idx;
                   return (
                     <div
-                      key={st.key}
-                      className={`p-2.5 rounded-lg border text-xs flex items-center space-x-2 transition-all ${
+                      key={stage.key}
+                      className={`p-2.5 rounded-xl border text-xs flex items-center space-x-2 transition-all ${
                         isActive
-                          ? `${st.color} shadow-sm font-semibold`
-                          : 'border-slate-800/80 bg-slate-900/40 text-slate-500'
+                          ? `${stage.color} font-semibold shadow-sm ring-1 ring-white/10`
+                          : isPassed
+                          ? 'border-gemini-600/40 bg-gemini-800/40 text-gemini-400 line-through'
+                          : 'border-gemini-700/30 bg-gemini-800/20 text-gemini-500'
                       }`}
                     >
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span className="truncate">{st.label}</span>
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{stage.label}</span>
                     </div>
                   );
                 })}
               </div>
+            </div>
 
+            {/* Core Cognitive Telemetry */}
+            <div className="grid grid-cols-2 gap-3">
               {/* Struggle Counter */}
-              <div className="mt-3 p-2.5 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-400">Consecutive Struggle Turns:</span>
-                <span className={`font-mono font-bold px-2 py-0.5 rounded ${
-                  (learnerState?.struggle_turn_count || 0) >= 4
-                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                    : (learnerState?.struggle_turn_count || 0) >= 2
-                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    : 'bg-slate-800 text-slate-300'
-                }`}>
+              <div className="p-3.5 rounded-2xl bg-gemini-750 border border-gemini-700/60 shadow-sm">
+                <div className="flex items-center space-x-2 text-gemini-400 text-xs mb-1">
+                  <Flame className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Struggle Count</span>
+                </div>
+                <div className="text-xl font-bold text-gemini-100">
                   {learnerState?.struggle_turn_count ?? 0}
-                </span>
+                  <span className="text-xs font-normal text-gemini-400 ml-1">turns</span>
+                </div>
+                <p className="text-[10px] text-gemini-400 mt-1">
+                  {learnerState?.struggle_turn_count && learnerState.struggle_turn_count >= 2
+                    ? 'Escalation triggered'
+                    : 'Exploring conceptually'}
+                </p>
+              </div>
+
+              {/* Hu et al. LCC Mastery Score */}
+              <div className="p-3.5 rounded-2xl bg-gemini-750 border border-gemini-700/60 shadow-sm">
+                <div className="flex items-center space-x-2 text-gemini-400 text-xs mb-1">
+                  <Award className="w-3.5 h-3.5 text-blue-400" />
+                  <span>LCC Mastery</span>
+                </div>
+                <div className="text-xl font-bold text-gemini-100">
+                  {learnerState?.overall_lcc_score ? learnerState.overall_lcc_score.toFixed(2) : '0.00'}
+                  <span className="text-xs font-normal text-gemini-400 ml-1">/ 1.0</span>
+                </div>
+                <p className="text-[10px] text-gemini-400 mt-1">
+                  Topic: {learnerState?.topic_status || 'IN_PROGRESS'}
+                </p>
               </div>
             </div>
 
-            {/* Active Misconceptions */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                  Active Misconceptions
+            {/* Misconception Progress Meters (Thonge & Thakkar) */}
+            <div className="p-4 rounded-2xl bg-gemini-750 border border-gemini-700/60 space-y-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-gemini-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                  Active Misconceptions ({activeMisconceptions.length})
                 </span>
-                <span className="text-[10px] text-slate-500">Threshold: &lt; 0.18</span>
+                <span className="text-[10px] text-gemini-500">Confidence</span>
               </div>
 
-              {!learnerState || Object.keys(learnerState.active_misconceptions || {}).length === 0 ? (
-                <div className="p-3 rounded-lg bg-emerald-950/20 border border-emerald-500/30 text-emerald-400 text-xs flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>No unresolved misconceptions.</span>
+              {activeMisconceptions.length === 0 ? (
+                <div className="text-center py-6 text-xs text-gemini-400 border border-dashed border-gemini-700 rounded-xl">
+                  ✨ No active cognitive misconceptions detected.
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {Object.entries(learnerState.active_misconceptions).map(([id, conf]) => {
-                    const pct = Math.min(100, Math.round(conf * 100));
-                    const isHigh = conf >= 0.65;
-                    const isLow = conf < 0.30;
+                  {activeMisconceptions.map(([miscId, confidence]) => {
+                    const pct = Math.round(confidence * 100);
                     return (
-                      <div key={id} className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs space-y-1.5">
-                        <div className="flex items-center justify-between font-mono">
-                          <span className="text-slate-300 text-[11px] truncate max-w-[200px]" title={id}>
-                            {id}
+                      <div key={miscId} className="space-y-1.5">
+                        <div className="flex justify-between text-xs">
+                          <span className="font-mono text-[11px] text-gemini-300 truncate max-w-[200px]">
+                            {miscId.replace('misc_', '').replace(/_/g, ' ')}
                           </span>
-                          <span className={`font-bold ${isHigh ? 'text-amber-400' : isLow ? 'text-emerald-400' : 'text-slate-300'}`}>
-                            {conf.toFixed(2)}
-                          </span>
+                          <span className="font-semibold text-amber-300">{pct}%</span>
                         </div>
-                        {/* Progress Bar with 0.18 threshold marker */}
-                        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden relative">
+                        <div className="w-full h-1.5 bg-gemini-800 rounded-full overflow-hidden">
                           <div
-                            className={`h-full transition-all duration-500 ${
-                              isHigh ? 'bg-amber-500' : isLow ? 'bg-emerald-500' : 'bg-sky-500'
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              pct >= 70
+                                ? 'bg-rose-500'
+                                : pct >= 40
+                                ? 'bg-amber-400'
+                                : 'bg-blue-400'
                             }`}
                             style={{ width: `${pct}%` }}
                           />
@@ -187,128 +218,99 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                 </div>
               )}
             </div>
-
-            {/* LCC Score Mastery Progress */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Award className="w-3.5 h-3.5 text-emerald-400" /> LCC Mastery Score
-                </span>
-                <span className="text-[10px] text-slate-500">Done at &gt; 0.80</span>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Overall Score:</span>
-                  <span className={`font-mono font-bold text-sm ${
-                    (learnerState?.overall_lcc_score || 0) >= 0.8
-                      ? 'text-emerald-400'
-                      : (learnerState?.overall_lcc_score || 0) < 0
-                      ? 'text-rose-400'
-                      : 'text-slate-200'
-                  }`}>
-                    {learnerState?.overall_lcc_score?.toFixed(2) ?? '0.00'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-[11px] pt-2 border-t border-slate-800">
-                  <div className="bg-slate-950 p-2 rounded border border-slate-800/80">
-                    <span className="text-slate-500 block text-[10px]">Accum. Correct (RN+RO)</span>
-                    <span className="text-emerald-400 font-mono font-bold">
-                      +{learnerState?.accumulated_correct_score?.toFixed(2) ?? '0.00'}
-                    </span>
-                  </div>
-                  <div className="bg-slate-950 p-2 rounded border border-slate-800/80">
-                    <span className="text-slate-500 block text-[10px]">Accum. Wrong (IN+IO)</span>
-                    <span className="text-rose-400 font-mono font-bold">
-                      -{learnerState?.accumulated_wrong_score?.toFixed(2) ?? '0.00'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
           </>
         ) : (
-          /* Pipeline Trace JSON Inspector */
+          /* Pipeline Trace Tab */
           <div className="space-y-4">
-            {/* Trace Selector */}
-            {traces.length > 1 && (
-              <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs">
-                {traces.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedTraceIndex(i)}
-                    className={`px-2.5 py-1 rounded text-[11px] font-mono transition-colors shrink-0 ${
-                      selectedTraceIndex === i
-                        ? 'bg-emerald-600 text-white font-bold'
-                        : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                    }`}
-                  >
-                    Turn {i + 1}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {!currentTrace ? (
-              <div className="text-center py-10 text-xs text-slate-500">
-                No telemetry traces recorded yet.
+            {traces.length === 0 ? (
+              <div className="text-center py-12 text-xs text-gemini-400">
+                No turn traces recorded yet. Send a message to inspect execution telemetry.
               </div>
             ) : (
-              <div className="space-y-3">
-                <div className="text-[11px] text-slate-400 flex items-center justify-between pb-1 border-b border-slate-800">
-                  <span>Turn {currentTrace.turn_index} Execution Trace</span>
-                  <span className="font-mono text-emerald-400">{currentTrace.latency_ms} ms</span>
+              <>
+                {/* Turn Selector Chips */}
+                <div className="flex items-center space-x-1.5 overflow-x-auto pb-1">
+                  {traces.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedTraceIndex(idx)}
+                      className={`px-3 py-1 rounded-full text-xs font-mono transition-all ${
+                        selectedTraceIndex === idx
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'bg-gemini-750 text-gemini-400 hover:bg-gemini-700'
+                      }`}
+                    >
+                      Turn {idx + 1}
+                    </button>
+                  ))}
                 </div>
 
-                {/* Analyzer Payload */}
-                <div className="rounded-lg bg-slate-900 border border-slate-800 overflow-hidden text-xs">
-                  <button
-                    onClick={() => toggleTraceSection('analyzer')}
-                    className="w-full p-2.5 bg-slate-800/50 flex items-center justify-between font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-                  >
-                    <span>1. Understanding Analyzer (Nidhi)</span>
-                    {traceExpandedSections.analyzer ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </button>
-                  {traceExpandedSections.analyzer && (
-                    <pre className="p-3 text-[10px] text-slate-300 font-mono overflow-x-auto bg-slate-950">
-                      {JSON.stringify(currentTrace.analyzer_output, null, 2)}
-                    </pre>
-                  )}
-                </div>
+                {currentTrace && (
+                  <div className="space-y-3 text-xs">
+                    {/* Execution Latency Card */}
+                    <div className="p-3 rounded-xl bg-gemini-750 border border-gemini-700/60 flex items-center justify-between text-gemini-300">
+                      <span>Turn Pipeline Latency</span>
+                      <span className="font-mono font-bold text-gemini-100">
+                        {currentTrace.latency_ms} ms
+                      </span>
+                    </div>
 
-                {/* Retriever Payload */}
-                <div className="rounded-lg bg-slate-900 border border-slate-800 overflow-hidden text-xs">
-                  <button
-                    onClick={() => toggleTraceSection('retriever')}
-                    className="w-full p-2.5 bg-slate-800/50 flex items-center justify-between font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-                  >
-                    <span>2. Course Retriever (Jignas)</span>
-                    {traceExpandedSections.retriever ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </button>
-                  {traceExpandedSections.retriever && (
-                    <pre className="p-3 text-[10px] text-slate-300 font-mono overflow-x-auto bg-slate-950">
-                      {JSON.stringify(currentTrace.retriever_output, null, 2)}
-                    </pre>
-                  )}
-                </div>
+                    {/* Analyzer Output Accordion */}
+                    <div className="rounded-xl bg-gemini-750 border border-gemini-700/60 overflow-hidden">
+                      <button
+                        onClick={() => toggleTraceSection('analyzer')}
+                        className="w-full p-3 text-left font-semibold text-gemini-200 flex items-center justify-between hover:bg-gemini-700/50"
+                      >
+                        <span>1. Understanding Analyzer Output</span>
+                        {traceExpandedSections.analyzer ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      </button>
+                      {traceExpandedSections.analyzer && (
+                        <div className="p-3 bg-gemini-900 border-t border-gemini-700/60">
+                          <pre className="font-mono text-[10px] text-emerald-300 overflow-x-auto whitespace-pre-wrap">
+                            {JSON.stringify(currentTrace.analyzer_output, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
 
-                {/* Tutor Payload */}
-                <div className="rounded-lg bg-slate-900 border border-slate-800 overflow-hidden text-xs">
-                  <button
-                    onClick={() => toggleTraceSection('tutor')}
-                    className="w-full p-2.5 bg-slate-800/50 flex items-center justify-between font-medium text-slate-300 hover:bg-slate-800 transition-colors"
-                  >
-                    <span>3. Socratic Tutor Reasoning (Tahir)</span>
-                    {traceExpandedSections.tutor ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </button>
-                  {traceExpandedSections.tutor && (
-                    <pre className="p-3 text-[10px] text-slate-300 font-mono overflow-x-auto bg-slate-950">
-                      {JSON.stringify(currentTrace.tutor_output, null, 2)}
-                    </pre>
-                  )}
-                </div>
-              </div>
+                    {/* Retriever Output Accordion */}
+                    <div className="rounded-xl bg-gemini-750 border border-gemini-700/60 overflow-hidden">
+                      <button
+                        onClick={() => toggleTraceSection('retriever')}
+                        className="w-full p-3 text-left font-semibold text-gemini-200 flex items-center justify-between hover:bg-gemini-700/50"
+                      >
+                        <span>2. Course Retriever Output</span>
+                        {traceExpandedSections.retriever ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      </button>
+                      {traceExpandedSections.retriever && (
+                        <div className="p-3 bg-gemini-900 border-t border-gemini-700/60">
+                          <pre className="font-mono text-[10px] text-amber-300 overflow-x-auto whitespace-pre-wrap">
+                            {JSON.stringify(currentTrace.retriever_output, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Tutor Output Accordion */}
+                    <div className="rounded-xl bg-gemini-750 border border-gemini-700/60 overflow-hidden">
+                      <button
+                        onClick={() => toggleTraceSection('tutor')}
+                        className="w-full p-3 text-left font-semibold text-gemini-200 flex items-center justify-between hover:bg-gemini-700/50"
+                      >
+                        <span>3. Socratic Tutor Output</span>
+                        {traceExpandedSections.tutor ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      </button>
+                      {traceExpandedSections.tutor && (
+                        <div className="p-3 bg-gemini-900 border-t border-gemini-700/60">
+                          <pre className="font-mono text-[10px] text-blue-300 overflow-x-auto whitespace-pre-wrap">
+                            {JSON.stringify(currentTrace.tutor_output, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
