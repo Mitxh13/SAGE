@@ -43,7 +43,6 @@ DEBUG_REQUEST_CUES = [
     r"\bwrong (output|format|answer|result)s?\b",
     r"\bwhy is it (failing|breaking)\b",
     r"\bfails? to parse\b",
-]
     r"\b(fails?|failing)\b",
     r"\bmy (prompt|output|code|response)\b.{0,40}\b(wrong|weird|different|messy|random|ignore\w*)\b",
 ]
