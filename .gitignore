@@ -23,5 +23,8 @@ dist/
 .vite/
 .eslintcache
 
-#venv files
+# venv files
 .venv/
+
+# Microsoft Office temporary files
+~$*

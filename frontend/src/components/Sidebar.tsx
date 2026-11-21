@@ -207,10 +207,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-3.5 border-t border-[#DDD5C7] flex items-center justify-between bg-[#E8E1D4]">
         <div className="flex items-center space-x-2.5">
           <div className="w-8 h-8 rounded-full bg-[#E2ECE5] border border-[#8EB39D] text-[#1B3024] flex items-center justify-center text-xs font-extrabold shadow-sm">
-            M
+            PS
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-extrabold text-[#1B3024] leading-tight">Mitesh K</span>
+            <span className="text-xs font-extrabold text-[#1B3024] leading-tight">PES Student</span>
             <span className="text-[10px] text-[#244333] flex items-center gap-1 font-bold">
               <span className="w-2 h-2 rounded-full bg-[#4E7A60]"></span>
               SAGE Core Active
