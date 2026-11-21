@@ -11,7 +11,8 @@ export const App: React.FC = () => {
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [activeSession, setActiveSession] = useState<SessionDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [inspectorOpen, setInspectorOpen] = useState<boolean>(true);
+  const [inspectorOpen, setInspectorOpen] = useState<boolean>(false);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   // Initial load: Fetch units and sessions
   useEffect(() => {
@@ -82,6 +83,37 @@ export const App: React.FC = () => {
     }
   };
 
+  // Delete a session from history
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await sageApi.deleteSession(sessionId);
+      const remainingSessions = sessions.filter((s) => s.session_id !== sessionId);
+      setSessions(remainingSessions);
+
+      // If deleted session was currently open, switch or start fresh
+      if (activeSession?.session_id === sessionId) {
+        if (remainingSessions.length > 0) {
+          const nextDetail = await sageApi.getSession(remainingSessions[0].session_id);
+          setActiveSession(nextDetail);
+          setSelectedUnitId(nextDetail.unit_id);
+        } else {
+          const newSession = await sageApi.createSession(selectedUnitId);
+          setActiveSession(newSession);
+          setSessions([
+            {
+              session_id: newSession.session_id,
+              unit_id: newSession.unit_id,
+              title: `Session on ${newSession.unit_id}`,
+              created_at: new Date().toISOString(),
+            },
+          ]);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete session:', err);
+    }
+  };
+
   // Switch selected unit (creates new session on that unit)
   const handleSelectUnit = async (unitId: string) => {
     setSelectedUnitId(unitId);
@@ -126,12 +158,17 @@ export const App: React.FC = () => {
         if (!prev) return null;
         return {
           ...prev,
-          messages: [...prev.messages.filter((m) => m.id !== tempMsgId), {
-            id: `usr_${Date.now()}`,
-            role: 'user',
-            content,
-            created_at: new Date().toISOString(),
-          }, turnResp.message, ...(turnResp.follow_up_message ? [turnResp.follow_up_message] : [])],
+          messages: [
+            ...prev.messages.filter((m) => m.id !== tempMsgId),
+            {
+              id: `usr_${Date.now()}`,
+              role: 'user',
+              content,
+              created_at: new Date().toISOString(),
+            },
+            turnResp.message,
+            ...(turnResp.follow_up_message ? [turnResp.follow_up_message] : []),
+          ],
           learner_state: turnResp.learner_state,
           traces: [...prev.traces, turnResp.trace],
         };
@@ -143,9 +180,11 @@ export const App: React.FC = () => {
     }
   };
 
+  const activeUnit = units.find((u) => u.unit_id === selectedUnitId);
+
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-900 font-sans">
-      {/* 1. Left Sidebar */}
+    <div className="flex h-screen w-screen overflow-hidden bg-gemini-900 text-gemini-100 font-sans">
+      {/* 1. Left Gemini-Styled Sidebar */}
       <Sidebar
         units={units}
         selectedUnitId={selectedUnitId}
@@ -153,22 +192,29 @@ export const App: React.FC = () => {
         sessions={sessions}
         activeSessionId={activeSession?.session_id || null}
         onSelectSession={handleSelectSession}
+        onDeleteSession={handleDeleteSession}
         onNewSession={handleNewSession}
         isLoading={isLoading}
+        isOpen={sidebarOpen}
+        onToggleOpen={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      {/* 2. Center Chat Window */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      {/* 2. Center Chat Canvas */}
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         <ChatWindow
           messages={activeSession?.messages || []}
           onSendMessage={handleSendMessage}
           isLoading={isLoading}
           onToggleInspector={() => setInspectorOpen(!inspectorOpen)}
           inspectorOpen={inspectorOpen}
+          activeUnitTitle={activeUnit?.title}
+          units={units}
+          selectedUnitId={selectedUnitId}
+          onSelectUnit={handleSelectUnit}
         />
       </main>
 
-      {/* 3. Right Evaluator X-Ray State Inspector */}
+      {/* 3. Right Slide-Over X-Ray State Inspector */}
       <StateInspector
         learnerState={activeSession?.learner_state || null}
         traces={activeSession?.traces || []}
