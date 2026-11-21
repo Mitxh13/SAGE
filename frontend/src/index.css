@@ -2,20 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+@layer base {
+  body {
+    background-color: #FAF6F0;
+    color: #18201D;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background-color: #131314;
-  color: #e3e3e3;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Google Sans", sans-serif;
-  overflow: hidden;
+/* Elegant Sage Ambient Glow */
+.sage-ambient-bg {
+  background: radial-gradient(circle at 50% 35%, rgba(92, 135, 115, 0.10) 0%, rgba(232, 239, 234, 0.45) 45%, transparent 75%);
 }
 
-/* Custom Gemini-style scrollbar */
+.sage-hero-gradient {
+  background: linear-gradient(135deg, #2B4137 0%, #466B5A 60%, #5C8773 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Custom Minimalist Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -26,26 +32,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #282a2c;
+  background: #D8CEBE;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3c4043;
-}
-
-/* Ambient warm aura gradient like user's Gemini screenshot */
-.gemini-ambient-bg {
-  background: radial-gradient(
-    circle at 50% 35%,
-    rgba(217, 119, 6, 0.12) 0%,
-    rgba(180, 83, 9, 0.05) 30%,
-    transparent 70%
-  );
-}
-
-.gemini-sparkle-gradient {
-  background: linear-gradient(135deg, #4285F4 0%, #9B72CF 50%, #FBBC04 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: #B5A28D;
 }

@@ -5,7 +5,6 @@ import {
   ChevronDown,
   ChevronRight,
   Code2,
-  Gauge,
   HelpCircle,
   Lightbulb,
   BookOpen,
@@ -50,59 +49,61 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
   };
 
   const stages = [
-    { key: 'QUESTION', label: '1. Question', icon: HelpCircle, color: 'text-blue-400 border-blue-500/40 bg-blue-500/10' },
-    { key: 'HINT', label: '2. Hint', icon: Lightbulb, color: 'text-amber-400 border-amber-500/40 bg-amber-500/10' },
-    { key: 'EXPLANATION', label: '3. Explanation', icon: BookOpen, color: 'text-purple-400 border-purple-500/40 bg-purple-500/10' },
-    { key: 'WRAP_UP', label: '4. Wrap-up', icon: CheckCircle, color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
+    { key: 'QUESTION', label: '1. Question', icon: HelpCircle },
+    { key: 'HINT', label: '2. Hint', icon: Lightbulb },
+    { key: 'EXPLANATION', label: '3. Explanation', icon: BookOpen },
+    { key: 'WRAP_UP', label: '4. Wrap-up', icon: CheckCircle },
   ];
 
   const currentStageIndex = stages.findIndex((s) => s.key === learnerState?.scaffolding_stage);
   const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
 
   return (
-    <aside className="w-96 bg-gemini-800 border-l border-gemini-700/60 flex flex-col h-full z-30 select-none shadow-2xl transition-all font-sans">
+    <aside className="w-96 bg-cream-50 border-l border-cream-300 flex flex-col h-full z-30 select-none shadow-xl transition-all font-sans">
       {/* 1. Header */}
-      <div className="p-4 border-b border-gemini-700/60 flex items-center justify-between bg-gemini-850">
+      <div className="p-4 border-b border-cream-300 flex items-center justify-between bg-cream-150">
         <div className="flex items-center space-x-2.5">
-          <div className="w-6 h-6 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <Activity className="w-3.5 h-3.5" />
+          <div className="w-7 h-7 rounded-lg bg-sage-100 border border-sage-300 flex items-center justify-center text-sage-700">
+            <Activity className="w-4 h-4" />
           </div>
-          <h2 className="font-semibold text-sm text-gemini-100 tracking-tight">
-            X-Ray State Inspector
-          </h2>
+          <div>
+            <h2 className="font-semibold text-sm text-charcoal-900 tracking-tight">
+              Pedagogical Telemetry
+            </h2>
+            <p className="text-[11px] text-charcoal-500">Live Orchestrator State</p>
+          </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-full text-gemini-400 hover:text-gemini-100 hover:bg-gemini-700 transition-colors"
+          className="p-1.5 rounded-lg text-charcoal-400 hover:text-charcoal-800 hover:bg-cream-200 transition-colors"
           title="Close drawer"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* 2. Tabs */}
-      <div className="flex border-b border-gemini-700/60 text-xs font-medium bg-gemini-850/50">
+      {/* 2. Navigation Tabs */}
+      <div className="flex border-b border-cream-300 bg-cream-100">
         <button
           onClick={() => setActiveTab('metrics')}
-          className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 py-2.5 text-xs font-medium text-center transition-all ${
             activeTab === 'metrics'
-              ? 'border-blue-500 text-blue-300 bg-gemini-800'
-              : 'border-transparent text-gemini-400 hover:text-gemini-200'
+              ? 'text-sage-800 border-b-2 border-sage-700 bg-white'
+              : 'text-charcoal-500 hover:text-charcoal-800'
           }`}
         >
-          <Gauge className="w-3.5 h-3.5" />
-          <span>Learner Telemetry</span>
+          Learner State
         </button>
         <button
           onClick={() => setActiveTab('trace')}
-          className={`flex-1 py-3 text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
+          className={`flex-1 py-2.5 text-xs font-medium text-center transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'trace'
-              ? 'border-blue-500 text-blue-300 bg-gemini-800'
-              : 'border-transparent text-gemini-400 hover:text-gemini-200'
+              ? 'text-sage-800 border-b-2 border-sage-700 bg-white'
+              : 'text-charcoal-500 hover:text-charcoal-800'
           }`}
         >
           <Code2 className="w-3.5 h-3.5" />
-          <span>Pipeline Trace ({traces.length})</span>
+          <span>Execution Traces ({traces.length})</span>
         </button>
       </div>
 
@@ -111,200 +112,209 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
         {activeTab === 'metrics' ? (
           <>
             {/* Scaffolding Stage Stepper */}
-            <div className="p-4 rounded-2xl bg-gemini-750 border border-gemini-700/60 space-y-3 shadow-sm">
-              <span className="text-[11px] font-semibold text-gemini-400 uppercase tracking-wider block">
-                Active Scaffolding Stage
+            <div className="space-y-2">
+              <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider block">
+                Scaffolding Escalation
               </span>
               <div className="grid grid-cols-2 gap-2">
-                {stages.map((stage, idx) => {
-                  const Icon = stage.icon;
-                  const isActive = stage.key === learnerState?.scaffolding_stage;
-                  const isPassed = currentStageIndex > idx;
+                {stages.map((stg, idx) => {
+                  const Icon = stg.icon;
+                  const isCurrent = stg.key === learnerState?.scaffolding_stage;
+                  const isPassed = idx < currentStageIndex;
+
                   return (
                     <div
-                      key={stage.key}
+                      key={stg.key}
                       className={`p-2.5 rounded-xl border text-xs flex items-center space-x-2 transition-all ${
-                        isActive
-                          ? `${stage.color} font-semibold shadow-sm ring-1 ring-white/10`
+                        isCurrent
+                          ? 'bg-sage-700 text-white border-sage-800 shadow-sage-soft font-medium'
                           : isPassed
-                          ? 'border-gemini-600/40 bg-gemini-800/40 text-gemini-400 line-through'
-                          : 'border-gemini-700/30 bg-gemini-800/20 text-gemini-500'
+                          ? 'bg-sage-50 text-sage-800 border-sage-200'
+                          : 'bg-white text-charcoal-400 border-cream-200'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{stage.label}</span>
+                      <span className="truncate">{stg.label}</span>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* Core Cognitive Telemetry */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Core Metrics Cards */}
+            <div className="grid grid-cols-2 gap-2.5">
               {/* Struggle Counter */}
-              <div className="p-3.5 rounded-2xl bg-gemini-750 border border-gemini-700/60 shadow-sm">
-                <div className="flex items-center space-x-2 text-gemini-400 text-xs mb-1">
-                  <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <div className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-1">
+                <div className="flex items-center space-x-1.5 text-charcoal-500 text-xs">
+                  <Flame className="w-3.5 h-3.5 text-amber-600" />
                   <span>Struggle Count</span>
                 </div>
-                <div className="text-xl font-bold text-gemini-100">
+                <div className="text-xl font-bold text-charcoal-900">
                   {learnerState?.struggle_turn_count ?? 0}
-                  <span className="text-xs font-normal text-gemini-400 ml-1">turns</span>
+                  <span className="text-xs font-normal text-charcoal-400 ml-1">turns</span>
                 </div>
-                <p className="text-[10px] text-gemini-400 mt-1">
-                  {learnerState?.struggle_turn_count && learnerState.struggle_turn_count >= 2
-                    ? 'Escalation triggered'
-                    : 'Exploring conceptually'}
-                </p>
               </div>
 
-              {/* Hu et al. LCC Mastery Score */}
-              <div className="p-3.5 rounded-2xl bg-gemini-750 border border-gemini-700/60 shadow-sm">
-                <div className="flex items-center space-x-2 text-gemini-400 text-xs mb-1">
-                  <Award className="w-3.5 h-3.5 text-blue-400" />
-                  <span>LCC Mastery</span>
+              {/* LCC Score */}
+              <div className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-1">
+                <div className="flex items-center space-x-1.5 text-charcoal-500 text-xs">
+                  <Award className="w-3.5 h-3.5 text-sage-600" />
+                  <span>LCC Score</span>
                 </div>
-                <div className="text-xl font-bold text-gemini-100">
-                  {learnerState?.overall_lcc_score ? learnerState.overall_lcc_score.toFixed(2) : '0.00'}
-                  <span className="text-xs font-normal text-gemini-400 ml-1">/ 1.0</span>
+                <div className="text-xl font-bold text-charcoal-900">
+                  {learnerState ? `${(learnerState.overall_lcc_score * 100).toFixed(0)}%` : '0%'}
                 </div>
-                <p className="text-[10px] text-gemini-400 mt-1">
-                  Topic: {learnerState?.topic_status || 'IN_PROGRESS'}
-                </p>
               </div>
             </div>
 
-            {/* Misconception Progress Meters (Thonge & Thakkar) */}
-            <div className="p-4 rounded-2xl bg-gemini-750 border border-gemini-700/60 space-y-3 shadow-sm">
+            {/* Topic Status */}
+            <div className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-2">
+              <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider block">
+                Topic Mastery Status
+              </span>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-gemini-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-                  Active Misconceptions ({activeMisconceptions.length})
+                <span className="text-xs font-medium text-charcoal-800">
+                  {learnerState?.topic_status || 'IN_PROGRESS'}
                 </span>
-                <span className="text-[10px] text-gemini-500">Confidence</span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
+                    learnerState?.topic_status === 'DONE'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      : 'bg-sage-100 text-sage-800 border-sage-200'
+                  }`}
+                >
+                  {learnerState?.topic_status === 'DONE' ? 'Topic Mastered' : 'In Progress'}
+                </span>
+              </div>
+            </div>
+
+            {/* Active Misconceptions Tracker */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                  Active Misconceptions
+                </span>
+                <span className="text-xs text-charcoal-400 font-mono">
+                  {activeMisconceptions.length}
+                </span>
               </div>
 
               {activeMisconceptions.length === 0 ? (
-                <div className="text-center py-6 text-xs text-gemini-400 border border-dashed border-gemini-700 rounded-xl">
-                  ✨ No active cognitive misconceptions detected.
+                <div className="p-3 rounded-2xl bg-white border border-cream-300 text-xs text-charcoal-500 text-center">
+                  No active misconceptions detected in current session.
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {activeMisconceptions.map(([miscId, confidence]) => {
-                    const pct = Math.round(confidence * 100);
-                    return (
-                      <div key={miscId} className="space-y-1.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="font-mono text-[11px] text-gemini-300 truncate max-w-[200px]">
-                            {miscId.replace('misc_', '').replace(/_/g, ' ')}
-                          </span>
-                          <span className="font-semibold text-amber-300">{pct}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-gemini-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              pct >= 70
-                                ? 'bg-rose-500'
-                                : pct >= 40
-                                ? 'bg-amber-400'
-                                : 'bg-blue-400'
-                            }`}
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
+                <div className="space-y-2">
+                  {activeMisconceptions.map(([id, conf]) => (
+                    <div
+                      key={id}
+                      className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-charcoal-800 font-mono truncate max-w-[200px]">
+                          {id}
+                        </span>
+                        <span className="text-sage-700 font-medium">
+                          {(conf * 100).toFixed(0)}%
+                        </span>
                       </div>
-                    );
-                  })}
+                      <div className="w-full bg-cream-200 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="bg-sage-600 h-full rounded-full transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.max(5, conf * 100))}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           </>
         ) : (
-          /* Pipeline Trace Tab */
-          <div className="space-y-4">
+          /* Execution Traces Viewer */
+          <div className="space-y-3">
             {traces.length === 0 ? (
-              <div className="text-center py-12 text-xs text-gemini-400">
-                No turn traces recorded yet. Send a message to inspect execution telemetry.
+              <div className="text-center py-8 text-charcoal-400 text-xs">
+                No turn traces logged yet. Send a message to inspect execution.
               </div>
             ) : (
               <>
-                {/* Turn Selector Chips */}
-                <div className="flex items-center space-x-1.5 overflow-x-auto pb-1">
-                  {traces.map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedTraceIndex(idx)}
-                      className={`px-3 py-1 rounded-full text-xs font-mono transition-all ${
-                        selectedTraceIndex === idx
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'bg-gemini-750 text-gemini-400 hover:bg-gemini-700'
-                      }`}
-                    >
-                      Turn {idx + 1}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider">
+                    Trace Selector
+                  </span>
+                  <select
+                    value={selectedTraceIndex}
+                    onChange={(e) => setSelectedTraceIndex(Number(e.target.value))}
+                    className="bg-white border border-cream-300 text-charcoal-800 text-xs rounded-xl px-2.5 py-1 focus:outline-none"
+                  >
+                    {traces.map((_, idx) => (
+                      <option key={idx} value={idx}>
+                        Turn #{idx + 1}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {currentTrace && (
-                  <div className="space-y-3 text-xs">
-                    {/* Execution Latency Card */}
-                    <div className="p-3 rounded-xl bg-gemini-750 border border-gemini-700/60 flex items-center justify-between text-gemini-300">
-                      <span>Turn Pipeline Latency</span>
-                      <span className="font-mono font-bold text-gemini-100">
-                        {currentTrace.latency_ms} ms
-                      </span>
-                    </div>
-
-                    {/* Analyzer Output Accordion */}
-                    <div className="rounded-xl bg-gemini-750 border border-gemini-700/60 overflow-hidden">
+                  <div className="space-y-2.5">
+                    {/* Analyzer Stage Trace */}
+                    <div className="border border-cream-300 rounded-2xl bg-white overflow-hidden shadow-sm">
                       <button
                         onClick={() => toggleTraceSection('analyzer')}
-                        className="w-full p-3 text-left font-semibold text-gemini-200 flex items-center justify-between hover:bg-gemini-700/50"
+                        className="w-full px-3.5 py-2.5 bg-cream-100 flex items-center justify-between text-xs font-semibold text-charcoal-800 text-left"
                       >
-                        <span>1. Understanding Analyzer Output</span>
-                        {traceExpandedSections.analyzer ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        <span>1. Understanding Analyzer</span>
+                        {traceExpandedSections.analyzer ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 text-charcoal-400" />
+                        )}
                       </button>
                       {traceExpandedSections.analyzer && (
-                        <div className="p-3 bg-gemini-900 border-t border-gemini-700/60">
-                          <pre className="font-mono text-[10px] text-emerald-300 overflow-x-auto whitespace-pre-wrap">
-                            {JSON.stringify(currentTrace.analyzer_output, null, 2)}
-                          </pre>
+                        <div className="p-3 text-[11px] font-mono text-charcoal-700 bg-cream-50 overflow-x-auto max-h-48">
+                          <pre>{JSON.stringify(currentTrace.analyzer_output, null, 2)}</pre>
                         </div>
                       )}
                     </div>
 
-                    {/* Retriever Output Accordion */}
-                    <div className="rounded-xl bg-gemini-750 border border-gemini-700/60 overflow-hidden">
+                    {/* Retriever Stage Trace */}
+                    <div className="border border-cream-300 rounded-2xl bg-white overflow-hidden shadow-sm">
                       <button
                         onClick={() => toggleTraceSection('retriever')}
-                        className="w-full p-3 text-left font-semibold text-gemini-200 flex items-center justify-between hover:bg-gemini-700/50"
+                        className="w-full px-3.5 py-2.5 bg-cream-100 flex items-center justify-between text-xs font-semibold text-charcoal-800 text-left"
                       >
-                        <span>2. Course Retriever Output</span>
-                        {traceExpandedSections.retriever ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        <span>2. Course Retriever Context</span>
+                        {traceExpandedSections.retriever ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 text-charcoal-400" />
+                        )}
                       </button>
                       {traceExpandedSections.retriever && (
-                        <div className="p-3 bg-gemini-900 border-t border-gemini-700/60">
-                          <pre className="font-mono text-[10px] text-amber-300 overflow-x-auto whitespace-pre-wrap">
-                            {JSON.stringify(currentTrace.retriever_output, null, 2)}
-                          </pre>
+                        <div className="p-3 text-[11px] font-mono text-charcoal-700 bg-cream-50 overflow-x-auto max-h-48">
+                          <pre>{JSON.stringify(currentTrace.retriever_output, null, 2)}</pre>
                         </div>
                       )}
                     </div>
 
-                    {/* Tutor Output Accordion */}
-                    <div className="rounded-xl bg-gemini-750 border border-gemini-700/60 overflow-hidden">
+                    {/* Tutor Stage Trace */}
+                    <div className="border border-cream-300 rounded-2xl bg-white overflow-hidden shadow-sm">
                       <button
                         onClick={() => toggleTraceSection('tutor')}
-                        className="w-full p-3 text-left font-semibold text-gemini-200 flex items-center justify-between hover:bg-gemini-700/50"
+                        className="w-full px-3.5 py-2.5 bg-cream-100 flex items-center justify-between text-xs font-semibold text-charcoal-800 text-left"
                       >
-                        <span>3. Socratic Tutor Output</span>
-                        {traceExpandedSections.tutor ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        <span>3. Tutor Agent Scaffolding</span>
+                        {traceExpandedSections.tutor ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 text-charcoal-400" />
+                        )}
                       </button>
                       {traceExpandedSections.tutor && (
-                        <div className="p-3 bg-gemini-900 border-t border-gemini-700/60">
-                          <pre className="font-mono text-[10px] text-blue-300 overflow-x-auto whitespace-pre-wrap">
-                            {JSON.stringify(currentTrace.tutor_output, null, 2)}
-                          </pre>
+                        <div className="p-3 text-[11px] font-mono text-charcoal-700 bg-cream-50 overflow-x-auto max-h-48">
+                          <pre>{JSON.stringify(currentTrace.tutor_output, null, 2)}</pre>
                         </div>
                       )}
                     </div>
