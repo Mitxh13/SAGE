@@ -4,40 +4,29 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        sage: {
-          50: '#F5F8F6',
-          100: '#E8EFEA',
-          200: '#D0DFD6',
-          300: '#ADC5B8',
-          400: '#82A694',
-          500: '#5C8773',
-          600: '#466B5A',
-          700: '#385547', // Primary dignified sage green
-          800: '#2B4137',
-          900: '#1E2E27',
-          950: '#131D18',
-        },
         cream: {
-          50: '#FDFBF7',
-          100: '#FAF6F0', // Soft warm cream canvas
-          150: '#F4EFE7',
-          200: '#EFE8DE', // Elevated surfaces / cards
-          300: '#E3DACD', // Clean border dividers
-          400: '#CFBFAB',
-          500: '#B5A28D',
+          50: '#FAF8F4',
+          100: '#F5F1E9', // Main whole-page canvas
+          200: '#EAE4D8', // Sidebar & surface
+          300: '#DDD5C7', // Borders
+          400: '#C9BFAD',
+          500: '#B0A28E',
         },
-        charcoal: {
-          900: '#18201D', // High contrast typography
-          800: '#26332E',
-          700: '#394A43',
-          600: '#4F635A',
-          500: '#677D73', // Secondary labels
-          400: '#8B9F96', // Muted timestamps / borders
-          300: '#B8C6C0',
+        sage: {
+          50: '#F2F7F4',
+          100: '#EAF2ED', // Softest sage component tint
+          200: '#DCE8E0', // Component cards, input pills, list items
+          300: '#B8D1C2', // Component borders
+          400: '#8EB39D', // Hover borders
+          500: '#649377',
+          600: '#4B755E',
+          700: '#385A48', // Primary buttons & key highlights
+          800: '#294335', // Dark sage text
+          900: '#1C2E24', // Deepest high-contrast sage text
+          950: '#121E18',
         },
       },
       fontFamily: {
@@ -51,10 +40,10 @@ export default {
         ],
       },
       boxShadow: {
-        'sage-soft': '0 2px 14px -2px rgba(56, 85, 71, 0.08)',
-        'pill': '0 4px 28px -4px rgba(30, 46, 39, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.04)',
-        'pill-hover': '0 8px 32px -4px rgba(30, 46, 39, 0.16), 0 2px 8px -1px rgba(0, 0, 0, 0.06)',
-        'ambient': '0 20px 80px -20px rgba(92, 135, 115, 0.15)',
+        'sage-sm': '0 1px 3px 0 rgba(28, 46, 36, 0.06), 0 1px 2px -1px rgba(28, 46, 36, 0.04)',
+        'sage-md': '0 4px 16px -2px rgba(28, 46, 36, 0.08), 0 2px 4px -2px rgba(28, 46, 36, 0.04)',
+        'sage-lg': '0 10px 30px -4px rgba(28, 46, 36, 0.12), 0 4px 6px -2px rgba(28, 46, 36, 0.04)',
+        'pill': '0 4px 20px -2px rgba(28, 46, 36, 0.10), 0 2px 6px -1px rgba(28, 46, 36, 0.05)',
       },
     },
   },

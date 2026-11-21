@@ -59,23 +59,23 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
   const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
 
   return (
-    <aside className="w-96 bg-cream-50 border-l border-cream-300 flex flex-col h-full z-30 select-none shadow-xl transition-all font-sans">
+    <aside className="w-96 bg-cream-200 border-l border-cream-300 flex flex-col h-full z-30 select-none shadow-sage-lg transition-all font-sans">
       {/* 1. Header */}
-      <div className="p-4 border-b border-cream-300 flex items-center justify-between bg-cream-150">
+      <div className="p-4 border-b border-cream-300 flex items-center justify-between bg-cream-300/40">
         <div className="flex items-center space-x-2.5">
-          <div className="w-7 h-7 rounded-lg bg-sage-100 border border-sage-300 flex items-center justify-center text-sage-700">
-            <Activity className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-xl bg-sage-700 text-cream-50 flex items-center justify-center shadow-sage-sm">
+            <Activity className="w-4 h-4 text-cream-100" />
           </div>
           <div>
-            <h2 className="font-semibold text-sm text-charcoal-900 tracking-tight">
+            <h2 className="font-bold text-sm text-sage-950 tracking-tight">
               Pedagogical Telemetry
             </h2>
-            <p className="text-[11px] text-charcoal-500">Live Orchestrator State</p>
+            <p className="text-[11px] text-sage-700 font-medium">Live Orchestrator State</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="p-1.5 rounded-lg text-charcoal-400 hover:text-charcoal-800 hover:bg-cream-200 transition-colors"
+          className="p-1.5 rounded-lg text-sage-700 hover:text-sage-950 hover:bg-cream-300 transition-colors"
           title="Close drawer"
         >
           <X className="w-4 h-4" />
@@ -83,23 +83,23 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
       </div>
 
       {/* 2. Navigation Tabs */}
-      <div className="flex border-b border-cream-300 bg-cream-100">
+      <div className="flex border-b border-cream-300 bg-cream-200">
         <button
           onClick={() => setActiveTab('metrics')}
-          className={`flex-1 py-2.5 text-xs font-medium text-center transition-all ${
+          className={`flex-1 py-2.5 text-xs font-bold text-center transition-all ${
             activeTab === 'metrics'
-              ? 'text-sage-800 border-b-2 border-sage-700 bg-white'
-              : 'text-charcoal-500 hover:text-charcoal-800'
+              ? 'text-sage-950 border-b-2 border-sage-700 bg-cream-100 shadow-sm'
+              : 'text-sage-700 hover:text-sage-950'
           }`}
         >
           Learner State
         </button>
         <button
           onClick={() => setActiveTab('trace')}
-          className={`flex-1 py-2.5 text-xs font-medium text-center transition-all flex items-center justify-center gap-1.5 ${
+          className={`flex-1 py-2.5 text-xs font-bold text-center transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'trace'
-              ? 'text-sage-800 border-b-2 border-sage-700 bg-white'
-              : 'text-charcoal-500 hover:text-charcoal-800'
+              ? 'text-sage-950 border-b-2 border-sage-700 bg-cream-100 shadow-sm'
+              : 'text-sage-700 hover:text-sage-950'
           }`}
         >
           <Code2 className="w-3.5 h-3.5" />
@@ -108,12 +108,12 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
       </div>
 
       {/* 3. Tab Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {activeTab === 'metrics' ? (
           <>
             {/* Scaffolding Stage Stepper */}
             <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider block">
+              <span className="text-[11px] font-bold text-sage-800 uppercase tracking-wider block">
                 Scaffolding Escalation
               </span>
               <div className="grid grid-cols-2 gap-2">
@@ -127,10 +127,10 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                       key={stg.key}
                       className={`p-2.5 rounded-xl border text-xs flex items-center space-x-2 transition-all ${
                         isCurrent
-                          ? 'bg-sage-700 text-white border-sage-800 shadow-sage-soft font-medium'
+                          ? 'bg-sage-700 text-cream-50 border-sage-800 shadow-sage-sm font-bold'
                           : isPassed
-                          ? 'bg-sage-50 text-sage-800 border-sage-200'
-                          : 'bg-white text-charcoal-400 border-cream-200'
+                          ? 'bg-sage-200 text-sage-950 border-sage-300 font-semibold'
+                          : 'bg-sage-50 text-sage-600 border-sage-200 font-medium'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5 shrink-0" />
@@ -141,46 +141,46 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
               </div>
             </div>
 
-            {/* Core Metrics Cards */}
+            {/* Core Metrics Cards (Sage Components) */}
             <div className="grid grid-cols-2 gap-2.5">
               {/* Struggle Counter */}
-              <div className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-1">
-                <div className="flex items-center space-x-1.5 text-charcoal-500 text-xs">
-                  <Flame className="w-3.5 h-3.5 text-amber-600" />
+              <div className="p-3 rounded-2xl bg-sage-100 border border-sage-300 shadow-sage-sm space-y-1">
+                <div className="flex items-center space-x-1.5 text-sage-800 text-xs font-semibold">
+                  <Flame className="w-3.5 h-3.5 text-sage-700" />
                   <span>Struggle Count</span>
                 </div>
-                <div className="text-xl font-bold text-charcoal-900">
+                <div className="text-2xl font-extrabold text-sage-950">
                   {learnerState?.struggle_turn_count ?? 0}
-                  <span className="text-xs font-normal text-charcoal-400 ml-1">turns</span>
+                  <span className="text-xs font-normal text-sage-700 ml-1">turns</span>
                 </div>
               </div>
 
               {/* LCC Score */}
-              <div className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-1">
-                <div className="flex items-center space-x-1.5 text-charcoal-500 text-xs">
-                  <Award className="w-3.5 h-3.5 text-sage-600" />
+              <div className="p-3 rounded-2xl bg-sage-100 border border-sage-300 shadow-sage-sm space-y-1">
+                <div className="flex items-center space-x-1.5 text-sage-800 text-xs font-semibold">
+                  <Award className="w-3.5 h-3.5 text-sage-700" />
                   <span>LCC Score</span>
                 </div>
-                <div className="text-xl font-bold text-charcoal-900">
+                <div className="text-2xl font-extrabold text-sage-950">
                   {learnerState ? `${(learnerState.overall_lcc_score * 100).toFixed(0)}%` : '0%'}
                 </div>
               </div>
             </div>
 
             {/* Topic Status */}
-            <div className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-2">
-              <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider block">
+            <div className="p-3 rounded-2xl bg-sage-100 border border-sage-300 shadow-sage-sm space-y-2">
+              <span className="text-[11px] font-bold text-sage-800 uppercase tracking-wider block">
                 Topic Mastery Status
               </span>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-charcoal-800">
+                <span className="text-xs font-bold text-sage-950">
                   {learnerState?.topic_status || 'IN_PROGRESS'}
                 </span>
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${
+                  className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
                     learnerState?.topic_status === 'DONE'
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                      : 'bg-sage-100 text-sage-800 border-sage-200'
+                      ? 'bg-sage-700 text-cream-50 border-sage-800 shadow-sage-sm'
+                      : 'bg-sage-200 text-sage-900 border-sage-300'
                   }`}
                 >
                   {learnerState?.topic_status === 'DONE' ? 'Topic Mastered' : 'In Progress'}
@@ -191,17 +191,17 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
             {/* Active Misconceptions Tracker */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                <span className="text-[11px] font-bold text-sage-800 uppercase tracking-wider flex items-center gap-1.5">
+                  <AlertTriangle className="w-3.5 h-3.5 text-sage-700" />
                   Active Misconceptions
                 </span>
-                <span className="text-xs text-charcoal-400 font-mono">
+                <span className="text-xs text-sage-700 font-mono font-bold">
                   {activeMisconceptions.length}
                 </span>
               </div>
 
               {activeMisconceptions.length === 0 ? (
-                <div className="p-3 rounded-2xl bg-white border border-cream-300 text-xs text-charcoal-500 text-center">
+                <div className="p-3 rounded-2xl bg-sage-100 border border-sage-300 text-xs text-sage-700 text-center font-medium">
                   No active misconceptions detected in current session.
                 </div>
               ) : (
@@ -209,19 +209,19 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                   {activeMisconceptions.map(([id, conf]) => (
                     <div
                       key={id}
-                      className="p-3 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-1.5"
+                      className="p-3 rounded-2xl bg-sage-50 border border-sage-300 shadow-sage-sm space-y-1.5"
                     >
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-charcoal-800 font-mono truncate max-w-[200px]">
+                        <span className="font-bold text-sage-950 font-mono truncate max-w-[200px]">
                           {id}
                         </span>
-                        <span className="text-sage-700 font-medium">
+                        <span className="text-sage-800 font-bold">
                           {(conf * 100).toFixed(0)}%
                         </span>
                       </div>
-                      <div className="w-full bg-cream-200 h-1.5 rounded-full overflow-hidden">
+                      <div className="w-full bg-sage-200 h-2 rounded-full overflow-hidden">
                         <div
-                          className="bg-sage-600 h-full rounded-full transition-all duration-300"
+                          className="bg-sage-700 h-full rounded-full transition-all duration-300"
                           style={{ width: `${Math.min(100, Math.max(5, conf * 100))}%` }}
                         />
                       </div>
@@ -235,19 +235,19 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
           /* Execution Traces Viewer */
           <div className="space-y-3">
             {traces.length === 0 ? (
-              <div className="text-center py-8 text-charcoal-400 text-xs">
+              <div className="text-center py-8 text-sage-700 text-xs font-medium">
                 No turn traces logged yet. Send a message to inspect execution.
               </div>
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-charcoal-500 uppercase tracking-wider">
+                  <span className="text-[11px] font-bold text-sage-800 uppercase tracking-wider">
                     Trace Selector
                   </span>
                   <select
                     value={selectedTraceIndex}
                     onChange={(e) => setSelectedTraceIndex(Number(e.target.value))}
-                    className="bg-white border border-cream-300 text-charcoal-800 text-xs rounded-xl px-2.5 py-1 focus:outline-none"
+                    className="bg-sage-100 border border-sage-300 text-sage-950 font-semibold text-xs rounded-xl px-2.5 py-1 focus:outline-none"
                   >
                     {traces.map((_, idx) => (
                       <option key={idx} value={idx}>
@@ -260,60 +260,60 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                 {currentTrace && (
                   <div className="space-y-2.5">
                     {/* Analyzer Stage Trace */}
-                    <div className="border border-cream-300 rounded-2xl bg-white overflow-hidden shadow-sm">
+                    <div className="border border-sage-300 rounded-2xl bg-sage-50 overflow-hidden shadow-sage-sm">
                       <button
                         onClick={() => toggleTraceSection('analyzer')}
-                        className="w-full px-3.5 py-2.5 bg-cream-100 flex items-center justify-between text-xs font-semibold text-charcoal-800 text-left"
+                        className="w-full px-3.5 py-2.5 bg-sage-200 flex items-center justify-between text-xs font-bold text-sage-950 text-left"
                       >
                         <span>1. Understanding Analyzer</span>
                         {traceExpandedSections.analyzer ? (
-                          <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+                          <ChevronDown className="w-3.5 h-3.5 text-sage-700" />
                         ) : (
-                          <ChevronRight className="w-3.5 h-3.5 text-charcoal-400" />
+                          <ChevronRight className="w-3.5 h-3.5 text-sage-700" />
                         )}
                       </button>
                       {traceExpandedSections.analyzer && (
-                        <div className="p-3 text-[11px] font-mono text-charcoal-700 bg-cream-50 overflow-x-auto max-h-48">
+                        <div className="p-3 text-[11px] font-mono text-sage-950 bg-sage-50 overflow-x-auto max-h-48">
                           <pre>{JSON.stringify(currentTrace.analyzer_output, null, 2)}</pre>
                         </div>
                       )}
                     </div>
 
                     {/* Retriever Stage Trace */}
-                    <div className="border border-cream-300 rounded-2xl bg-white overflow-hidden shadow-sm">
+                    <div className="border border-sage-300 rounded-2xl bg-sage-50 overflow-hidden shadow-sage-sm">
                       <button
                         onClick={() => toggleTraceSection('retriever')}
-                        className="w-full px-3.5 py-2.5 bg-cream-100 flex items-center justify-between text-xs font-semibold text-charcoal-800 text-left"
+                        className="w-full px-3.5 py-2.5 bg-sage-200 flex items-center justify-between text-xs font-bold text-sage-950 text-left"
                       >
                         <span>2. Course Retriever Context</span>
                         {traceExpandedSections.retriever ? (
-                          <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+                          <ChevronDown className="w-3.5 h-3.5 text-sage-700" />
                         ) : (
-                          <ChevronRight className="w-3.5 h-3.5 text-charcoal-400" />
+                          <ChevronRight className="w-3.5 h-3.5 text-sage-700" />
                         )}
                       </button>
                       {traceExpandedSections.retriever && (
-                        <div className="p-3 text-[11px] font-mono text-charcoal-700 bg-cream-50 overflow-x-auto max-h-48">
+                        <div className="p-3 text-[11px] font-mono text-sage-950 bg-sage-50 overflow-x-auto max-h-48">
                           <pre>{JSON.stringify(currentTrace.retriever_output, null, 2)}</pre>
                         </div>
                       )}
                     </div>
 
                     {/* Tutor Stage Trace */}
-                    <div className="border border-cream-300 rounded-2xl bg-white overflow-hidden shadow-sm">
+                    <div className="border border-sage-300 rounded-2xl bg-sage-50 overflow-hidden shadow-sage-sm">
                       <button
                         onClick={() => toggleTraceSection('tutor')}
-                        className="w-full px-3.5 py-2.5 bg-cream-100 flex items-center justify-between text-xs font-semibold text-charcoal-800 text-left"
+                        className="w-full px-3.5 py-2.5 bg-sage-200 flex items-center justify-between text-xs font-bold text-sage-950 text-left"
                       >
                         <span>3. Tutor Agent Scaffolding</span>
                         {traceExpandedSections.tutor ? (
-                          <ChevronDown className="w-3.5 h-3.5 text-charcoal-400" />
+                          <ChevronDown className="w-3.5 h-3.5 text-sage-700" />
                         ) : (
-                          <ChevronRight className="w-3.5 h-3.5 text-charcoal-400" />
+                          <ChevronRight className="w-3.5 h-3.5 text-sage-700" />
                         )}
                       </button>
                       {traceExpandedSections.tutor && (
-                        <div className="p-3 text-[11px] font-mono text-charcoal-700 bg-cream-50 overflow-x-auto max-h-48">
+                        <div className="p-3 text-[11px] font-mono text-sage-950 bg-sage-50 overflow-x-auto max-h-48">
                           <pre>{JSON.stringify(currentTrace.tutor_output, null, 2)}</pre>
                         </div>
                       )}

@@ -183,7 +183,7 @@ export const App: React.FC = () => {
   const activeUnit = units.find((u) => u.unit_id === selectedUnitId);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-cream-100 text-charcoal-900 font-sans">
+    <div className="flex h-screen w-screen overflow-hidden bg-cream-100 text-sage-900 font-sans">
       {/* 1. Left Collapsible Sage Sidebar */}
       <Sidebar
         units={units}

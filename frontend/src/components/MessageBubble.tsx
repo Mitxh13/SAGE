@@ -23,29 +23,29 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     switch (move) {
       case 'QUESTION':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-medium bg-sage-100 text-sage-800 border border-sage-200 shadow-sm">
-            <HelpCircle className="w-3.5 h-3.5 text-sage-700" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sage-200 text-sage-950 border border-sage-400 shadow-sage-sm">
+            <HelpCircle className="w-3.5 h-3.5 text-sage-800" />
             Guiding Question
           </span>
         );
       case 'HINT':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-sm">
-            <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sage-200 text-sage-950 border border-sage-400 shadow-sage-sm">
+            <Lightbulb className="w-3.5 h-3.5 text-sage-800" />
             Adaptive Hint
           </span>
         );
       case 'EXPLANATION':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200 shadow-sm">
-            <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sage-200 text-sage-950 border border-sage-400 shadow-sage-sm">
+            <BookOpen className="w-3.5 h-3.5 text-sage-800" />
             Course Explanation
           </span>
         );
       case 'WRAP_UP':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-sage-700 text-cream-50 border border-sage-800 shadow-sage-sm">
+            <CheckCircle className="w-3.5 h-3.5 text-cream-50" />
             Topic Mastered
           </span>
         );
@@ -57,7 +57,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   if (isUser) {
     return (
       <div className="flex justify-end mb-4">
-        <div className="max-w-2xl bg-sage-700 text-white rounded-3xl rounded-tr-md px-5 py-3.5 shadow-sage-soft text-sm leading-relaxed">
+        <div className="max-w-2xl bg-sage-700 text-cream-50 rounded-3xl rounded-tr-md px-5 py-3.5 shadow-sage-sm text-sm leading-relaxed font-medium">
           <p className="whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>
@@ -67,8 +67,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   return (
     <div className="flex items-start space-x-3 mb-6">
       {/* SAGE Avatar */}
-      <div className="w-8 h-8 rounded-xl bg-sage-100 border border-sage-200 flex items-center justify-center text-sage-700 shrink-0 shadow-sm mt-1">
-        <Sparkles className="w-4 h-4 text-sage-700" />
+      <div className="w-8 h-8 rounded-xl bg-sage-700 text-cream-50 flex items-center justify-center shrink-0 shadow-sage-sm mt-1">
+        <Sparkles className="w-4 h-4 text-cream-100" />
       </div>
 
       <div className="flex-1 max-w-2xl space-y-2.5">
@@ -79,8 +79,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           </div>
         )}
 
-        {/* Message Content Card */}
-        <div className="bg-white border border-cream-300 rounded-3xl rounded-tl-md px-5 py-4 text-charcoal-800 text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
+        {/* Message Content Card in Sage Component Surface */}
+        <div className="bg-sage-100 border border-sage-300 rounded-3xl rounded-tl-md px-5 py-4 text-sage-950 text-sm leading-relaxed whitespace-pre-wrap shadow-sage-sm font-medium">
           {message.content}
         </div>
 
@@ -89,27 +89,27 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           <div className="pt-1">
             <button
               onClick={() => setShowCitations(!showCitations)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white hover:bg-cream-150 border border-cream-300 text-xs text-charcoal-600 hover:text-charcoal-800 transition-all shadow-sm"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sage-200 hover:bg-sage-300 border border-sage-300 text-xs text-sage-950 font-bold transition-all shadow-sage-sm"
             >
-              <FileText className="w-3.5 h-3.5 text-sage-600" />
-              <span className="font-medium">Curriculum Reference ({message.citations.length})</span>
+              <FileText className="w-3.5 h-3.5 text-sage-700" />
+              <span>Curriculum Reference ({message.citations.length})</span>
               {showCitations ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
 
             {showCitations && (
-              <div className="mt-2 space-y-2 pl-2 border-l-2 border-sage-300">
+              <div className="mt-2 space-y-2 pl-2 border-l-2 border-sage-400">
                 {message.citations.map((c: CitationItem, i: number) => (
                   <div
                     key={i}
-                    className="p-3 rounded-2xl bg-white border border-cream-300 text-xs text-charcoal-700 shadow-sm space-y-1"
+                    className="p-3.5 rounded-2xl bg-sage-50 border border-sage-300 text-xs text-sage-950 shadow-sage-sm space-y-1"
                   >
-                    <div className="font-semibold text-sage-800 flex items-center justify-between">
+                    <div className="font-bold text-sage-950 flex items-center justify-between">
                       <span>{c.source_title}</span>
-                      <span className="text-[10px] bg-sage-50 text-sage-700 px-2 py-0.5 rounded-full border border-sage-200">
+                      <span className="text-[10px] bg-sage-200 text-sage-900 px-2 py-0.5 rounded-full border border-sage-300 font-semibold">
                         {c.slide_or_section}
                       </span>
                     </div>
-                    <p className="text-charcoal-600 italic leading-relaxed">
+                    <p className="text-sage-800 italic leading-relaxed font-normal">
                       "{c.excerpt}"
                     </p>
                   </div>
