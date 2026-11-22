@@ -28,3 +28,7 @@ dist/
 
 # Microsoft Office temporary files
 ~$*
+
+# Untracked live demo notes
+DEMO_README.md
+modules/tutor/test_tutor_quick.py
