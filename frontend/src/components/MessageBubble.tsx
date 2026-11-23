@@ -7,9 +7,9 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  Sparkles,
 } from 'lucide-react';
 import { CitationItem, Message, ScaffoldingMove } from '../types/sage';
+import { SageLogo } from './SageLogo';
 
 interface MessageBubbleProps {
   message: Message;
@@ -66,9 +66,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
   return (
     <div className="flex items-start space-x-3 mb-6">
-      {/* SAGE Avatar (Light Sage Icon Box with Dark Green Star) */}
+      {/* SAGE Avatar (Custom SAGE Wisdom Emblem) */}
       <div className="w-8 h-8 rounded-xl bg-[#E2ECE5] border-2 border-[#8EB39D] flex items-center justify-center shrink-0 shadow-sm mt-1">
-        <Sparkles className="w-4 h-4 text-[#244333]" />
+        <SageLogo size={18} />
       </div>
 
       <div className="flex-1 max-w-2xl space-y-2.5">

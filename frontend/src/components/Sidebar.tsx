@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
   Plus,
   BookOpen,
   MessageSquare,
-  Settings,
   ChevronLeft,
   ChevronRight,
   Compass,
@@ -12,6 +10,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { SessionSummary, UnitSummary } from '../types/sage';
+import { SageLogo } from './SageLogo';
 
 interface SidebarProps {
   units: UnitSummary[];
@@ -78,8 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 1. Header with Logo & Collapse button */}
       <div className="p-4 flex items-center justify-between border-b border-[#DDD5C7]">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#E2ECE5] border border-[#8EB39D] text-[#244333] flex items-center justify-center shadow-sm">
-            <Sparkles className="w-4 h-4 text-[#244333]" />
+          <div className="w-8 h-8 rounded-xl bg-[#E2ECE5] border border-[#8EB39D] flex items-center justify-center shadow-sm">
+            <SageLogo size={20} />
           </div>
           <div className="flex flex-col">
             <span className="font-extrabold text-[#1B3024] text-sm tracking-tight flex items-center gap-1.5">
@@ -88,7 +87,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 Socratic AI
               </span>
             </span>
-            <span className="text-[11px] text-[#3A604B] font-semibold">Curriculum Tutor</span>
           </div>
         </div>
 
@@ -211,19 +209,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div className="flex flex-col">
             <span className="text-xs font-extrabold text-[#1B3024] leading-tight">PES Student</span>
-            <span className="text-[10px] text-[#244333] flex items-center gap-1 font-bold">
-              <span className="w-2 h-2 rounded-full bg-[#4E7A60]"></span>
-              SAGE Core Active
-            </span>
           </div>
         </div>
-
-        <button
-          className="p-1.5 rounded-lg hover:bg-[#DCD4C6] text-[#244333] transition-colors"
-          title="SAGE Configuration"
-        >
-          <Settings className="w-4 h-4" />
-        </button>
       </div>
     </aside>
   );
