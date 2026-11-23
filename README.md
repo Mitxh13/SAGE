@@ -1,4 +1,8 @@
-# SAGE: Socratic Agent for Guided Exploration
+<div align="center">
+  <img src="frontend/public/sage-logo.svg" alt="SAGE Logo" width="96" height="96" />
+  <h1>SAGE: Socratic Agent for Guided Exploration</h1>
+  <p><em>Intelligent Socratic AI Tutoring for Prompt Engineering & Generative AI</em></p>
+</div>
 
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![SQLAlchemy](https://img.shields.io/badge/Database-SQLAlchemy%202.0%20(SQLite)-red.svg)](https://www.sqlalchemy.org)
