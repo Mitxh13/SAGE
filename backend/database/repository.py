@@ -69,7 +69,7 @@ class SageRepository:
         return self.db.scalars(stmt).first()
 
     def list_sessions(self) -> list[SessionSummary]:
-        """Fetch summary metadata for all sessions ordered by creation time."""
+        """Fetch summary metadata for all sessions ordered by creation time, showing only active dialogues with messages."""
         stmt = select(SessionModel).order_by(SessionModel.created_at.desc())
         sessions = self.db.scalars(stmt).all()
         return [
@@ -80,6 +80,7 @@ class SageRepository:
                 created_at=s.created_at,
             )
             for s in sessions
+            if s.messages
         ]
 
     def delete_session(self, session_id: str) -> bool:
