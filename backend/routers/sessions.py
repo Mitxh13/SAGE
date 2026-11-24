@@ -75,17 +75,7 @@ async def create_session(
         title=session_title,
     )
 
-    # 3. Persist starter question as turn 0 assistant message
-    repo.save_message(
-        session_id=session.id,
-        role="assistant",
-        content=starter_question,
-        turn_index=0,
-        scaffolding_move=ScaffoldingMove.QUESTION,
-        citations=[],
-    )
-
-    # 4. Persist initial learner state
+    # 3. Initial learner state (waiting for student's first prompt)
     repo.create_or_update_learner_state(
         session_id=session.id,
         active_topic_id=active_topic_id,
