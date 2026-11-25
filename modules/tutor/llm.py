@@ -28,9 +28,9 @@ from pydantic import BaseModel
 
 from backend.config import Settings, get_settings
 
-DEFAULT_TIMEOUT_S = 15.0       # per attempt; comfortable window for live GenAI calls
+DEFAULT_TIMEOUT_S = 30.0       # per attempt; comfortable window for local and cloud LLM calls
 DEFAULT_TEMPERATURE = 0.4
-SUPPORTED_PROVIDERS = ("gemini",)
+SUPPORTED_PROVIDERS = ("gemini", "ollama")
 
 _CODE_FENCE = re.compile(r"^```(?:json)?\s*(.*?)\s*```$", re.S)
 
@@ -118,6 +118,64 @@ class GeminiClient(BaseLLMClient):
 
 
 # ════════════════════════════════════════════════════════════════════
+# Ollama (Local)
+# ════════════════════════════════════════════════════════════════════
+
+class OllamaClient(BaseLLMClient):
+    """Local Ollama client with JSON mode and connection error handling."""
+
+    def __init__(
+        self,
+        model: str = "llama3.2:latest",
+        base_url: str = "http://localhost:11434",
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+        temperature: float = DEFAULT_TEMPERATURE,
+    ) -> None:
+        self.model = model
+        self.base_url = base_url.rstrip("/")
+        self.timeout_s = timeout_s
+        self.temperature = temperature
+
+    async def generate_json(
+        self, system: str, user: str, schema: type[BaseModel] | None = None
+    ) -> dict[str, Any]:
+        import httpx
+
+        payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            "format": "json",
+            "stream": False,
+            "options": {"temperature": self.temperature},
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=self.timeout_s) as client:
+                resp = await client.post(f"{self.base_url}/api/chat", json=payload)
+                if resp.status_code != 200:
+                    raise LLMError(f"Ollama returned HTTP {resp.status_code}: {resp.text}")
+                data = resp.json()
+                raw_text = data.get("message", {}).get("content", "")
+                if not raw_text:
+                    raise LLMError("Ollama returned an empty response")
+                return parse_json_object(raw_text)
+        except httpx.ConnectError as exc:
+            raise LLMError(
+                f"Could not connect to Ollama at {self.base_url}. "
+                "Ensure Ollama is running ('ollama serve' or open the Ollama app)."
+            ) from exc
+        except (httpx.TimeoutException, TimeoutError) as exc:
+            raise LLMError(f"Ollama request timed out after {self.timeout_s}s") from exc
+        except Exception as exc:
+            if isinstance(exc, LLMError):
+                raise
+            raise LLMError(f"Ollama call failed: {exc}") from exc
+
+
+# ════════════════════════════════════════════════════════════════════
 # Fake (tests)
 # ════════════════════════════════════════════════════════════════════
 
@@ -156,6 +214,11 @@ def build_llm_client(settings: Settings | None = None) -> BaseLLMClient:
             f"LLM_PROVIDER '{provider}' is not supported by the tutor "
             f"(supported: {', '.join(SUPPORTED_PROVIDERS)})"
         )
+
+    if provider == "ollama":
+        model = settings.LLM_MODEL.strip() or "llama3.2:latest"
+        return OllamaClient(model=model)
+
     if not settings.LLM_API_KEY.strip():
         raise LLMConfigError("LLM_API_KEY is not set in .env")
     if not settings.LLM_MODEL.strip():

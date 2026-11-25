@@ -93,9 +93,12 @@ def _question(intent: HelpRequestType, topic: str) -> str:
 
 
 def _format_source(chunk: RetrievedChunk) -> str:
+    title = chunk.source_title
+    if "taxonomy" in title.lower():
+        title = "the course material"
     if not chunk.slide_or_section or chunk.slide_or_section.startswith("/"):
-        return chunk.source_title
-    return f"{chunk.source_title} ({chunk.slide_or_section})"
+        return title
+    return f"{title} ({chunk.slide_or_section})"
 
 
 def _hint(
