@@ -132,6 +132,7 @@ EXPECTATION_CUES: dict[str, list[str]] = {
         r"\breason\w* (through|out)\b",
         r"\bbreak\w* (it|the problem|the task)? ?down\b",
         r"\bshow (its|your|the) (work|reasoning|steps)\b",
+        r"\b(multi[- ]step|logic problems?|reasoning problems?|complex reasoning)\b",
     ],
     "exp_reasoning_before_answer": [
         r"\b(reasoning|rationale|steps?|explanation|working) (comes? )?(before|first|then) (the )?(final )?answer\b",
@@ -217,6 +218,7 @@ MISCONCEPTION_CUES: dict[str, list[str]] = {
         r"\banswer (first|before)\b",
         r"\b(put|give|state|write)\w* (the )?(final )?answer (first|at the (start|beginning|top)|before)\b",
         r"\b(reasoning|explanation|steps?) (after|at the end|afterwards)\b",
+        r"\b(answering|answers?)\b.{0,25}\b(immediately|right away|directly)\b",
     ],
     # Unit 3
     "misc_zero_temp_factual_guarantee": [
