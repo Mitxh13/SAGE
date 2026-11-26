@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ValidationError
 
-from backend.schemas.contracts import TutorAgentInput, TutorAgentOutput
+from backend.schemas.contracts import ScaffoldingMove, TutorAgentInput, TutorAgentOutput
 from modules.tutor.llm import BaseLLMClient, LLMError
 from modules.tutor.prompts import SYSTEM_PROMPT, build_user_prompt
 
@@ -46,9 +46,24 @@ async def generate_reply(
     except ValidationError as exc:
         raise LLMError(f"LLM reply doesn't match the expected shape: {exc}") from exc
 
+    stage = input_data.updated_learner_state.scaffolding_stage
+    msg = reply.tutor_message.strip()
+
+    # Ensure single focused question constraint is met for stages that require it
+    if stage in (ScaffoldingMove.QUESTION, ScaffoldingMove.HINT) and "?" not in msg:
+        msg = msg.rstrip(".") + ". What do you think?"
+    elif stage == ScaffoldingMove.EXPLANATION and "?" not in msg:
+        msg = msg.rstrip(".") + ". How would you apply this to your prompt?"
+
+    # Ensure chunk citations are valid retrieved IDs and grounded when required
+    valid_cids = {c.chunk_id for c in input_data.retrieved_chunks}
+    cids = [cid.strip() for cid in reply.cited_chunk_ids if cid.strip() in valid_cids]
+    if not cids and input_data.retrieved_chunks and stage in (ScaffoldingMove.HINT, ScaffoldingMove.EXPLANATION):
+        cids = [input_data.retrieved_chunks[0].chunk_id]
+
     return TutorAgentOutput(
-        scaffolding_move=input_data.updated_learner_state.scaffolding_stage,
-        tutor_message=reply.tutor_message.strip(),
+        scaffolding_move=stage,
+        tutor_message=msg,
         pedagogical_reasoning=reply.pedagogical_reasoning.strip(),
-        cited_chunk_ids=list(dict.fromkeys(cid.strip() for cid in reply.cited_chunk_ids if cid.strip())),
+        cited_chunk_ids=list(dict.fromkeys(cids)),
     )
