@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Message, UnitSummary } from '../types/sage';
 import { MessageBubble } from './MessageBubble';
+import { SageLogo } from './SageLogo';
 
 interface ChatWindowProps {
   messages: Message[];
@@ -190,21 +191,14 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           {isDialogueEmpty ? (
             /* Gemini-Style Centered Hero (Cream Canvas + Light Sage Components) */
             <div className="flex-1 flex flex-col items-center justify-center text-center px-4 relative py-8">
-              {/* Centered 4-pointed Sparkle Emblem in Light Sage */}
-              <div className="w-12 h-12 rounded-2xl bg-[#E2ECE5] border-2 border-[#8EB39D] flex items-center justify-center shadow-sm mb-5">
-                <svg
-                  className="w-7 h-7 text-[#244333]"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M12 0C12 6.627 6.627 12 0 12C6.627 12 12 17.373 12 24C12 17.373 17.373 12 24 12C17.373 12 12 6.627 12 0Z" />
-                </svg>
+              {/* Centered SAGE Custom Wisdom Emblem */}
+              <div className="w-14 h-14 rounded-2xl bg-[#E2ECE5] border-2 border-[#8EB39D] flex items-center justify-center shadow-sm mb-5 hover:scale-105 transition-transform">
+                <SageLogo size={34} />
               </div>
 
               {/* Clean Greeting */}
               <h1 className="text-3xl md:text-4xl font-extrabold text-[#1B3024] tracking-tight mb-2">
-                Hello, Mitesh
+                Hello, Student
               </h1>
               <p className="text-[#244333] text-sm md:text-base max-w-md mb-8 leading-relaxed font-semibold">
                 How can SAGE assist your understanding of Prompt Engineering today?
@@ -299,23 +293,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       {!isDialogueEmpty && (
         <div className="p-4 md:p-6 bg-gradient-to-t from-[#F5F1E9] via-[#F5F1E9] to-transparent">
           <div className="max-w-3xl mx-auto space-y-3">
-            {/* Quick Prompts Bar */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              <span className="text-[11px] text-[#244333] font-extrabold whitespace-nowrap pl-1">
-                Suggested prompts:
-              </span>
-              {QUICK_TEST_PROMPTS.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleQuickPromptClick(item.prompt)}
-                  disabled={isLoading}
-                  className="px-3.5 py-1.5 rounded-full bg-[#E2ECE5] hover:bg-[#D5E4D9] text-[#1B3024] text-[11px] font-extrabold whitespace-nowrap border-2 border-[#8EB39D] transition-colors disabled:opacity-50 shadow-sm"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
             {/* Docked Form */}
             {renderInputBar(false)}
 
