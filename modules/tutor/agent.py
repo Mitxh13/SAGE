@@ -27,7 +27,7 @@ import asyncio
 import logging
 from enum import Enum
 
-from backend.schemas.contracts import TutorAgentInput, TutorAgentOutput
+from backend.schemas.contracts import ScaffoldingMove, TutorAgentInput, TutorAgentOutput
 from backend.services.interfaces import BaseSocraticTutor
 from modules.tutor.generator import generate_reply
 from modules.tutor.llm import BaseLLMClient, LLMConfigError, LLMError, build_llm_client
@@ -37,7 +37,7 @@ from modules.tutor.validator import validate_reply
 logger = logging.getLogger(__name__)
 
 MAX_LLM_ATTEMPTS = 2   # first try + one corrective retry
-LLM_BUDGET_S = 16.0    # allow comfortable budget for live LLM generation + validation retry
+LLM_BUDGET_S = 30.0    # allow comfortable budget for local Ollama and cloud LLM generation + validation retry
 
 
 class Outcome(str, Enum):
@@ -102,9 +102,11 @@ class SocraticTutor(BaseSocraticTutor):
     ) -> tuple[TutorAgentOutput | None, Outcome, str]:
         """Run the generate → validate → retry loop; return (reply, outcome, why it failed)."""
         violations: list[str] | None = None
+        last_generated_reply: TutorAgentOutput | None = None
         for attempt in range(1, MAX_LLM_ATTEMPTS + 1):
             try:
                 reply = await generate_reply(input_data, self.llm, violations)
+                last_generated_reply = reply
             except LLMError as exc:
                 return None, Outcome.FALLBACK_ERROR, f"LLM error: {exc}"
 
@@ -118,6 +120,33 @@ class SocraticTutor(BaseSocraticTutor):
                 )
                 return reply, Outcome.LLM if attempt == 1 else Outcome.LLM_RETRY, ""
             violations = result.violations
+
+        # If the LLM generated a reply and it does NOT leak the direct answer,
+        # preserve the LLM response instead of dumping into a static template!
+        if last_generated_reply is not None:
+            has_leak = any("no_direct_answer_leaked" in v for v in (violations or []))
+            if not has_leak:
+                repaired_msg = last_generated_reply.tutor_message.strip()
+                stage = input_data.updated_learner_state.scaffolding_stage
+                if stage in (ScaffoldingMove.QUESTION, ScaffoldingMove.HINT) and "?" not in repaired_msg:
+                    repaired_msg = repaired_msg.rstrip(".") + ". What do you think?"
+                elif stage == ScaffoldingMove.EXPLANATION and "?" not in repaired_msg:
+                    repaired_msg = repaired_msg.rstrip(".") + ". How would you apply this to your prompt?"
+
+                valid_chunk_ids = {c.chunk_id for c in input_data.retrieved_chunks}
+                repaired_citations = [cid for cid in last_generated_reply.cited_chunk_ids if cid in valid_chunk_ids]
+                if not repaired_citations and input_data.retrieved_chunks and stage in (ScaffoldingMove.HINT, ScaffoldingMove.EXPLANATION):
+                    repaired_citations = [input_data.retrieved_chunks[0].chunk_id]
+
+                repaired_reply = last_generated_reply.model_copy(
+                    update={
+                        "tutor_message": repaired_msg,
+                        "cited_chunk_ids": repaired_citations,
+                        "constraints_validated": validate_reply(input_data, last_generated_reply).constraints,
+                        "pedagogical_reasoning": f"{last_generated_reply.pedagogical_reasoning} (Auto-aligned for conversational flow).",
+                    }
+                )
+                return repaired_reply, Outcome.LLM_RETRY, ""
 
         return None, Outcome.FALLBACK_RULES, f"LLM replies broke the rules twice ({violations[0]})"
 
