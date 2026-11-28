@@ -36,10 +36,18 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
     tutor: true,
   });
 
+  const safeTraces = traces || [];
+
+  React.useEffect(() => {
+    if (safeTraces.length > 0) {
+      setSelectedTraceIndex(safeTraces.length - 1);
+    }
+  }, [safeTraces.length]);
+
   if (!isOpen) return null;
 
-  const latestTrace = traces.length > 0 ? traces[traces.length - 1] : null;
-  const currentTrace = traces[selectedTraceIndex] || latestTrace;
+  const latestTrace = safeTraces.length > 0 ? safeTraces[safeTraces.length - 1] : null;
+  const currentTrace = safeTraces[selectedTraceIndex] || latestTrace;
 
   const toggleTraceSection = (section: string) => {
     setTraceExpandedSections((prev) => ({
@@ -55,8 +63,20 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
     { key: 'WRAP_UP', label: '4. Wrap-up', icon: CheckCircle },
   ];
 
-  const currentStageIndex = stages.findIndex((s) => s.key === learnerState?.scaffolding_stage);
+  // If the last completed turn was a topic wrap-up, highlight Wrap-up and show mastery!
+  const justMasteredTopic = latestTrace?.tutor_output?.scaffolding_move === 'WRAP_UP';
+  const effectiveStage = justMasteredTopic ? 'WRAP_UP' : (learnerState?.scaffolding_stage || 'QUESTION');
+  const currentStageIndex = stages.findIndex((s) => s.key === effectiveStage);
   const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
+
+  const formatTopicTitle = (topicId?: string | null) => {
+    if (!topicId) return 'Topic 1';
+    return topicId
+      .replace(/^topic_/, '')
+      .split('_')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  };
 
   return (
     <aside className="w-96 bg-[#EFE9DE] border-l border-[#DDD5C7] flex flex-col h-full z-30 select-none shadow-xl transition-all font-sans">
@@ -119,7 +139,7 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 {stages.map((stg, idx) => {
                   const Icon = stg.icon;
-                  const isCurrent = stg.key === learnerState?.scaffolding_stage;
+                  const isCurrent = stg.key === effectiveStage;
                   const isPassed = idx < currentStageIndex;
 
                   return (
@@ -162,7 +182,11 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                   <span>LCC Score</span>
                 </div>
                 <div className="text-2xl font-extrabold text-[#1B3024]">
-                  {learnerState ? `${(learnerState.overall_lcc_score * 100).toFixed(0)}%` : '0%'}
+                  {justMasteredTopic
+                    ? '100%'
+                    : learnerState
+                    ? `${(learnerState.overall_lcc_score * 100).toFixed(0)}%`
+                    : '0%'}
                 </div>
               </div>
             </div>
@@ -170,20 +194,27 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
             {/* Topic Status */}
             <div className="p-3 rounded-2xl bg-[#EAF2ED] border-2 border-[#9BBFA9] shadow-sm space-y-2">
               <span className="text-[11px] font-extrabold text-[#244333] uppercase tracking-wider block">
-                Topic Mastery Status
+                Active Topic
               </span>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-[#1B3024]">
-                  {learnerState?.topic_status || 'IN_PROGRESS'}
+                <span
+                  className="text-xs font-extrabold text-[#1B3024] truncate max-w-[190px]"
+                  title={formatTopicTitle(learnerState?.active_topic_id)}
+                >
+                  {formatTopicTitle(learnerState?.active_topic_id)}
                 </span>
                 <span
                   className={`px-3 py-1 rounded-full text-[10px] font-extrabold border-2 ${
-                    learnerState?.topic_status === 'DONE'
+                    justMasteredTopic || learnerState?.topic_status === 'DONE'
                       ? 'bg-[#D6E6DC] text-[#1B3024] border-[#649377] shadow-sm'
                       : 'bg-[#E2ECE5] text-[#244333] border-[#8EB39D]'
                   }`}
                 >
-                  {learnerState?.topic_status === 'DONE' ? 'Topic Mastered' : 'In Progress'}
+                  {justMasteredTopic
+                    ? 'Topic Mastered'
+                    : learnerState?.topic_status === 'DONE'
+                    ? 'Topic Mastered'
+                    : 'In Progress'}
                 </span>
               </div>
             </div>
