@@ -28,23 +28,8 @@ export const App: React.FC = () => {
         }
         setSessions(loadedSessions);
 
-        // Resume most recent session or create one
-        if (loadedSessions.length > 0) {
-          const detail = await sageApi.getSession(loadedSessions[0].session_id);
-          setActiveSession(detail);
-          setSelectedUnitId(detail.unit_id);
-        } else if (loadedUnits.length > 0) {
-          const newSession = await sageApi.createSession(loadedUnits[0].unit_id);
-          setActiveSession(newSession);
-          setSessions([
-            {
-              session_id: newSession.session_id,
-              unit_id: newSession.unit_id,
-              title: `Session on ${newSession.unit_id}`,
-              created_at: new Date().toISOString(),
-            },
-          ]);
-        }
+        // Default to clean home canvas on launch (like Gemini & Claude)
+        setActiveSession(null);
       } catch (err) {
         console.error('Failed to initialize SAGE frontend:', err);
       }
@@ -53,19 +38,9 @@ export const App: React.FC = () => {
     initialize();
   }, []);
 
-  // Handle new session creation
-  const handleNewSession = async () => {
-    setIsLoading(true);
-    try {
-      const newSession = await sageApi.createSession(selectedUnitId);
-      setActiveSession(newSession);
-      const updatedSessions = await sageApi.listSessions();
-      setSessions(updatedSessions);
-    } catch (err) {
-      console.error('Failed to create new session:', err);
-    } finally {
-      setIsLoading(false);
-    }
+  // Handle new session: return to clean home canvas without creating dummy sessions in sidebar
+  const handleNewSession = () => {
+    setActiveSession(null);
   };
 
   // Switch active session
@@ -90,55 +65,46 @@ export const App: React.FC = () => {
       const remainingSessions = sessions.filter((s) => s.session_id !== sessionId);
       setSessions(remainingSessions);
 
-      // If deleted session was currently open, switch or start fresh
+      // If deleted session was open, return to clean home canvas
       if (activeSession?.session_id === sessionId) {
-        if (remainingSessions.length > 0) {
-          const nextDetail = await sageApi.getSession(remainingSessions[0].session_id);
-          setActiveSession(nextDetail);
-          setSelectedUnitId(nextDetail.unit_id);
-        } else {
-          const newSession = await sageApi.createSession(selectedUnitId);
-          setActiveSession(newSession);
-          setSessions([
-            {
-              session_id: newSession.session_id,
-              unit_id: newSession.unit_id,
-              title: `Session on ${newSession.unit_id}`,
-              created_at: new Date().toISOString(),
-            },
-          ]);
-        }
+        setActiveSession(null);
       }
     } catch (err) {
       console.error('Failed to delete session:', err);
     }
   };
 
-  // Switch selected unit (creates new session on that unit)
-  const handleSelectUnit = async (unitId: string) => {
+  // Switch selected unit: select unit without spawning an empty session
+  const handleSelectUnit = (unitId: string) => {
     setSelectedUnitId(unitId);
-    setIsLoading(true);
-    try {
-      const newSession = await sageApi.createSession(unitId);
-      setActiveSession(newSession);
-      const updatedSessions = await sageApi.listSessions();
-      setSessions(updatedSessions);
-    } catch (err) {
-      console.error('Failed to start session on unit:', err);
-    } finally {
-      setIsLoading(false);
-    }
+    setActiveSession(null);
   };
 
-  // Send a student message in the active session
+  // Send a student message (lazily creates session on first message sent)
   const handleSendMessage = async (content: string) => {
-    if (!activeSession) return;
     setIsLoading(true);
+
+    let session = activeSession;
+
+    // If no active session exists yet (on clean home canvas), create the session now
+    if (!session) {
+      try {
+        const newSession = await sageApi.createSession(selectedUnitId);
+        session = newSession;
+      } catch (err) {
+        console.error('Failed to create session on first message:', err);
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    const currentSession = session;
+    const currentSessionId = session.session_id;
 
     // Optimistically append student message
     const tempMsgId = `temp_${Date.now()}`;
     const optimisticMessages = [
-      ...activeSession.messages,
+      ...(currentSession.messages || []),
       {
         id: tempMsgId,
         role: 'user' as const,
@@ -148,31 +114,36 @@ export const App: React.FC = () => {
     ];
 
     setActiveSession({
-      ...activeSession,
+      session_id: currentSessionId,
+      unit_id: selectedUnitId,
       messages: optimisticMessages,
+      learner_state: currentSession.learner_state,
+      traces: currentSession.traces || [],
     });
 
     try {
-      const turnResp = await sageApi.sendMessage(activeSession.session_id, content);
-      setActiveSession((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          messages: [
-            ...prev.messages.filter((m) => m.id !== tempMsgId),
-            {
-              id: `usr_${Date.now()}`,
-              role: 'user',
-              content,
-              created_at: new Date().toISOString(),
-            },
-            turnResp.message,
-            ...(turnResp.follow_up_message ? [turnResp.follow_up_message] : []),
-          ],
-          learner_state: turnResp.learner_state,
-          traces: [...prev.traces, turnResp.trace],
-        };
-      });
+      const turnResp = await sageApi.sendMessage(currentSessionId, content);
+      setActiveSession((prev) => ({
+        session_id: currentSessionId,
+        unit_id: selectedUnitId,
+        messages: [
+          ...(prev ? prev.messages.filter((m) => m.id !== tempMsgId) : []),
+          {
+            id: `usr_${Date.now()}`,
+            role: 'user',
+            content,
+            created_at: new Date().toISOString(),
+          },
+          turnResp.message,
+          ...(turnResp.follow_up_message ? [turnResp.follow_up_message] : []),
+        ],
+        learner_state: turnResp.learner_state,
+        traces: [...(prev?.traces || []), turnResp.trace],
+      }));
+
+      // Refresh sidebar sessions so the active chat now appears in Recent Dialogues
+      const updatedSessions = await sageApi.listSessions();
+      setSessions(updatedSessions);
     } catch (err) {
       console.error('Failed to process message turn:', err);
     } finally {
