@@ -67,8 +67,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
   return (
     <div className="flex items-start space-x-3 mb-6">
       {/* SAGE Avatar (Custom SAGE Wisdom Emblem) */}
-      <div className="w-8 h-8 rounded-xl bg-[#E2ECE5] border-2 border-[#8EB39D] flex items-center justify-center shrink-0 shadow-sm mt-1">
-        <SageLogo size={18} />
+      <div className="w-8 h-8 flex items-center justify-center shrink-0 mt-1">
+        <SageLogo size={24} />
       </div>
 
       <div className="flex-1 max-w-2xl space-y-2.5">

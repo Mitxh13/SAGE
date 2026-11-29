@@ -77,8 +77,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 1. Header with Logo & Collapse button */}
       <div className="p-4 flex items-center justify-between border-b border-[#DDD5C7]">
         <div className="flex items-center space-x-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#E2ECE5] border border-[#8EB39D] flex items-center justify-center shadow-sm">
-            <SageLogo size={20} />
+          <div className="w-7 h-7 flex items-center justify-center shrink-0">
+            <SageLogo size={24} />
           </div>
           <div className="flex flex-col">
             <span className="font-extrabold text-[#1B3024] text-sm tracking-tight flex items-center gap-1.5">

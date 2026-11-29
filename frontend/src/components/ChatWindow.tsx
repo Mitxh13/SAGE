@@ -192,8 +192,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             /* Gemini-Style Centered Hero (Cream Canvas + Light Sage Components) */
             <div className="flex-1 flex flex-col items-center justify-center text-center px-4 relative py-8">
               {/* Centered SAGE Custom Wisdom Emblem */}
-              <div className="w-14 h-14 rounded-2xl bg-[#E2ECE5] border-2 border-[#8EB39D] flex items-center justify-center shadow-sm mb-5 hover:scale-105 transition-transform">
-                <SageLogo size={34} />
+              <div className="mb-5 flex items-center justify-center hover:scale-105 transition-transform">
+                <SageLogo size={56} />
               </div>
 
               {/* Clean Greeting */}
