@@ -22,6 +22,15 @@ interface StateInspectorProps {
   onClose: () => void;
 }
 
+const TOPIC_TITLES: Record<string, string> = {
+  topic_output_formatting: 'Output Formatting and Structural Constraints',
+  topic_system_instructions_vs_user_data: 'System Instructions vs. User Data Separation',
+  topic_in_context_exemplars: 'Few-Shot Exemplar Selection and Formatting',
+  topic_chain_of_thought: 'Chain-of-Thought (CoT) Prompting',
+  topic_decoding_parameters: 'Sampling & Decoding Parameters (Temperature, Top-p)',
+  topic_rag_grounding: 'Retrieval-Augmented Generation Grounding',
+};
+
 export const StateInspector: React.FC<StateInspectorProps> = ({
   learnerState,
   traces,
@@ -71,6 +80,7 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
 
   const formatTopicTitle = (topicId?: string | null) => {
     if (!topicId) return 'Topic 1';
+    if (TOPIC_TITLES[topicId]) return TOPIC_TITLES[topicId];
     return topicId
       .replace(/^topic_/, '')
       .split('_')
