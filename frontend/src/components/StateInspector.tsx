@@ -3,6 +3,7 @@ import {
   Activity,
   Award,
   ChevronDown,
+  ChevronUp,
   ChevronRight,
   Code2,
   HelpCircle,
@@ -310,9 +311,14 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                               <button
                                 type="button"
                                 onClick={() => toggleMasteredRecap(mt.topicId)}
-                                className="text-[10px] text-[#244333] hover:text-[#1B3024] font-bold"
+                                className="inline-flex items-center gap-1 text-[10px] text-[#244333] hover:text-[#1B3024] font-bold"
                               >
-                                {isExpanded ? 'Hide' : 'Show'}
+                                <span>{isExpanded ? 'Hide' : 'Show'}</span>
+                                {isExpanded ? (
+                                  <ChevronUp className="w-3 h-3 text-[#244333]" />
+                                ) : (
+                                  <ChevronDown className="w-3 h-3 text-[#244333]" />
+                                )}
                               </button>
                             </div>
                             {isExpanded && (
