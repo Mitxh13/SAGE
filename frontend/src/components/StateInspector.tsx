@@ -45,6 +45,15 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
     tutor: true,
   });
 
+  const [expandedMastered, setExpandedMastered] = useState<Record<string, boolean>>({});
+
+  const toggleMasteredRecap = (topicId: string) => {
+    setExpandedMastered((prev) => ({
+      ...prev,
+      [topicId]: prev[topicId] === undefined ? false : !prev[topicId],
+    }));
+  };
+
   const safeTraces = traces || [];
 
   React.useEffect(() => {
@@ -72,12 +81,6 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
     { key: 'WRAP_UP', label: '4. Wrap-up', icon: CheckCircle },
   ];
 
-  // If the last completed turn was a topic wrap-up, highlight Wrap-up and show mastery!
-  const justMasteredTopic = latestTrace?.tutor_output?.scaffolding_move === 'WRAP_UP';
-  const effectiveStage = justMasteredTopic ? 'WRAP_UP' : (learnerState?.scaffolding_stage || 'QUESTION');
-  const currentStageIndex = stages.findIndex((s) => s.key === effectiveStage);
-  const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
-
   const formatTopicTitle = (topicId?: string | null) => {
     if (!topicId) return 'Topic 1';
     if (TOPIC_TITLES[topicId]) return TOPIC_TITLES[topicId];
@@ -87,6 +90,41 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(' ');
   };
+
+  // Collect all completed/mastered topics from execution traces
+  const masteredTopics = React.useMemo(() => {
+    const list: Array<{ topicId: string; title: string; recap?: string }> = [];
+    const seen = new Set<string>();
+
+    for (const tr of safeTraces) {
+      if (tr.tutor_output?.scaffolding_move === 'WRAP_UP') {
+        const tId = tr.analyzer_output?.active_topic_id;
+        if (tId && !seen.has(tId)) {
+          seen.add(tId);
+          list.push({
+            topicId: tId,
+            title: formatTopicTitle(tId),
+            recap: tr.tutor_output?.tutor_message,
+          });
+        }
+      }
+    }
+    return list;
+  }, [safeTraces]);
+
+  const activeTopicId = learnerState?.active_topic_id;
+  const lastTurnTopicId = latestTrace?.analyzer_output?.active_topic_id;
+  
+  // Wrap-up only applies to the active topic if the session has NOT advanced yet
+  const isWrapUpOnCurrentTopic =
+    latestTrace?.tutor_output?.scaffolding_move === 'WRAP_UP' &&
+    activeTopicId === lastTurnTopicId;
+
+  const effectiveStage = isWrapUpOnCurrentTopic
+    ? 'WRAP_UP'
+    : (learnerState?.scaffolding_stage || 'QUESTION');
+  const currentStageIndex = stages.findIndex((s) => s.key === effectiveStage);
+  const activeMisconceptions = Object.entries(learnerState?.active_misconceptions || {});
 
   return (
     <aside className="w-96 bg-[#EFE9DE] border-l border-[#DDD5C7] flex flex-col h-full z-30 select-none shadow-xl transition-all font-sans">
@@ -192,7 +230,7 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
                   <span>LCC Score</span>
                 </div>
                 <div className="text-2xl font-extrabold text-[#1B3024]">
-                  {justMasteredTopic
+                  {isWrapUpOnCurrentTopic
                     ? '100%'
                     : learnerState
                     ? `${(learnerState.overall_lcc_score * 100).toFixed(0)}%`
@@ -201,33 +239,95 @@ export const StateInspector: React.FC<StateInspectorProps> = ({
               </div>
             </div>
 
-            {/* Topic Status */}
-            <div className="p-3 rounded-2xl bg-[#EAF2ED] border-2 border-[#9BBFA9] shadow-sm space-y-2">
-              <span className="text-[11px] font-extrabold text-[#244333] uppercase tracking-wider block">
-                Active Topic
-              </span>
+            {/* Active Topic Card */}
+            <div className="p-3 rounded-2xl bg-[#EAF2ED] border-2 border-[#9BBFA9] shadow-sm space-y-1.5">
               <div className="flex items-center justify-between">
-                <span
-                  className="text-xs font-extrabold text-[#1B3024] truncate max-w-[190px]"
-                  title={formatTopicTitle(learnerState?.active_topic_id)}
-                >
-                  {formatTopicTitle(learnerState?.active_topic_id)}
+                <span className="text-[11px] font-extrabold text-[#244333] uppercase tracking-wider block">
+                  Active Topic
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-full text-[10px] font-extrabold border-2 ${
-                    justMasteredTopic || learnerState?.topic_status === 'DONE'
+                  className={`px-3 py-0.5 rounded-full text-[10px] font-extrabold border-2 ${
+                    isWrapUpOnCurrentTopic || learnerState?.topic_status === 'DONE'
                       ? 'bg-[#D6E6DC] text-[#1B3024] border-[#649377] shadow-sm'
                       : 'bg-[#E2ECE5] text-[#244333] border-[#8EB39D]'
                   }`}
                 >
-                  {justMasteredTopic
-                    ? 'Topic Mastered'
-                    : learnerState?.topic_status === 'DONE'
+                  {isWrapUpOnCurrentTopic || learnerState?.topic_status === 'DONE'
                     ? 'Topic Mastered'
                     : 'In Progress'}
                 </span>
               </div>
+              <div
+                className="text-xs font-extrabold text-[#1B3024] leading-snug"
+                title={formatTopicTitle(learnerState?.active_topic_id)}
+              >
+                {formatTopicTitle(learnerState?.active_topic_id)}
+              </div>
             </div>
+
+            {/* Mastered Topics Section */}
+            {masteredTopics.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-extrabold text-[#244333] uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle className="w-3.5 h-3.5 text-[#3A604B]" />
+                    Mastered Topics
+                  </span>
+                  <span className="text-xs text-[#244333] font-mono font-extrabold bg-[#D6E6DC] px-2 py-0.5 rounded-full border border-[#8EB39D]">
+                    {masteredTopics.length}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {masteredTopics.map((mt) => {
+                    const isExpanded = expandedMastered[mt.topicId] ?? true;
+                    return (
+                      <div
+                        key={mt.topicId}
+                        className="p-3 rounded-2xl bg-[#F4F8F5] border-2 border-[#8EB39D] shadow-sm space-y-2"
+                      >
+                        <div
+                          className="flex items-center justify-between cursor-pointer"
+                          onClick={() => toggleMasteredRecap(mt.topicId)}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="w-4 h-4 text-[#2D4D3B] shrink-0" />
+                            <span className="text-xs font-extrabold text-[#1B3024]">
+                              {mt.title}
+                            </span>
+                          </div>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-[#D6E6DC] text-[#1B3024] border border-[#649377] shrink-0">
+                            Mastered
+                          </span>
+                        </div>
+
+                        {mt.recap && (
+                          <div className="pt-1.5 border-t border-[#D5E4D9]">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] uppercase font-extrabold text-[#3A604B]">
+                                Mastery Synthesis
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleMasteredRecap(mt.topicId)}
+                                className="text-[10px] text-[#244333] hover:text-[#1B3024] font-bold"
+                              >
+                                {isExpanded ? 'Hide' : 'Show'}
+                              </button>
+                            </div>
+                            {isExpanded && (
+                              <p className="text-xs text-[#1B3024] italic leading-relaxed bg-[#EAF2ED] p-2.5 rounded-xl border border-[#ADC5B7] font-medium whitespace-pre-wrap">
+                                "{mt.recap}"
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Active Misconceptions Tracker */}
             <div className="space-y-2">
